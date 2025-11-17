@@ -1,0 +1,148 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "username": "dokter",
+      "password": "dokter123",
+      "role": "dokter"
+    },
+    {
+      "id": 3,
+      "username": "apoteker",
+      "password": "apotek123",
+      "role": "apoteker"
+    },
+    {
+      "id": 4,
+      "username": "kepala",
+      "password": "kepala123",
+      "role": "kepala"
+    }
+  ],
+  "patients": [
+    {
+      "id": 101,
+      "nama": "Budi Santoso",
+      "alamat": "Airmadidi",
+      "keluhan": "Demam",
+      "status": "menunggu"
+    },
+    {
+      "id": 102,
+      "nama": "Julio",
+      "alamat": "Minahasa",
+      "keluhan": "Batuk",
+      "status": "selesai"
+    },
+    {
+      "id": 103,
+      "nama": "Kenko",
+      "alamat": "Talaitad",
+      "keluhan": "Sakit Menelan",
+      "status": "menunggu"
+    },
+    {
+      "id": 104,
+      "nama": "Adriel",
+      "alamat": "airmadidi",
+      "keluhan": "",
+      "status": "menunggu"
+    },
+    {
+      "id": 105,
+      "nama": "",
+      "alamat": "",
+      "keluhan": "",
+      "status": "selesai"
+    },
+    {
+      "id": 106,
+      "nama": "Adriel",
+      "alamat": "airmadidi",
+      "keluhan": "Sakit Menelan",
+      "status": "selesai"
+    }
+  ],
+  "queue": [
+    {
+      "id": 1,
+      "patient_id": 102,
+      "patient_name": "Julio",
+      "status": "selesai"
+    },
+    {
+      "id": 2,
+      "patient_id": 103,
+      "patient_name": "Kenko",
+      "status": "menunggu"
+    },
+    {
+      "id": 3,
+      "patient_id": 104,
+      "patient_name": "Adriel",
+      "status": "menunggu"
+    },
+    {
+      "id": 4,
+      "patient_id": 105,
+      "patient_name": "",
+      "status": "selesai"
+    },
+    {
+      "id": 5,
+      "patient_id": 106,
+      "patient_name": "Adriel",
+      "status": "selesai"
+    }
+  ],
+  "examinations": [
+    {
+      "id": 1,
+      "patient_id": 102,
+      "doctor_id": 2,
+      "diagnosis": "demam",
+      "notes": "",
+      "date": "2025-11-11"
+    },
+    {
+      "id": 2,
+      "patient_id": 103,
+      "doctor_id": 10,
+      "diagnosis": "odinofagia (nyeri saat menelan) ",
+      "notes": "",
+      "date": "2025-11-12"
+    }
+  ],
+  "prescriptions": [
+    {
+      "id": 1,
+      "examination_id": 2,
+      "drug_id": 1,
+      "quantity": 1,
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "examination_id": 2,
+      "drug_id": 1,
+      "quantity": 1,
+      "notes": ""
+    }
+  ],
+  "drugs": [
+    {
+      "id": 1,
+      "nama": "Paracetamol",
+      "stok": 100,
+      "harga": 5000
+    }
+  ],
+  "payments": [],
+  "reports": []
+}
