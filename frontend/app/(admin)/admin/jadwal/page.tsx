@@ -8,7 +8,7 @@ export default function AdminSchedulePage() {
     <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
       <Card>
         <CardHeader>
-          <CardTitle>Atur Jadwal</CardTitle>
+          <CardTitle className="text-lg">Atur Jadwal</CardTitle>
         </CardHeader>
         <CardContent>
           <ScheduleForm />
@@ -16,23 +16,23 @@ export default function AdminSchedulePage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>List Jadwal</CardTitle>
+          <CardTitle className="text-lg">List Jadwal</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nama</TableHead>
-                <TableHead>Hari</TableHead>
-                <TableHead>Shift</TableHead>
+              <TableRow className="bg-beige">
+                <TableHead className="text-navy font-bold">Nama</TableHead>
+                <TableHead className="text-navy font-bold">Hari</TableHead>
+                <TableHead className="text-navy font-bold">Shift</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {schedules.map((sch) => (
-                <TableRow key={sch.id}>
-                  <TableCell>{users.find((user) => user.id === sch.userId)?.name}</TableCell>
-                  <TableCell>{sch.day}</TableCell>
-                  <TableCell>{sch.shift}</TableCell>
+                <TableRow key={sch.id} className="hover:bg-sky-blue/30 transition-colors">
+                  <TableCell className="font-medium text-navy">{users.find((user) => user.id === sch.userId)?.name}</TableCell>
+                  <TableCell className="text-navy">{sch.day}</TableCell>
+                  <TableCell className="text-navy">{sch.shift}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

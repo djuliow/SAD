@@ -8,7 +8,7 @@ export default function ApotekStockPage() {
     <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
       <Card>
         <CardHeader>
-          <CardTitle>Perbarui Stok</CardTitle>
+          <CardTitle className="text-lg">Perbarui Stok</CardTitle>
         </CardHeader>
         <CardContent>
           <MedicineForm />
@@ -16,23 +16,27 @@ export default function ApotekStockPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Inventori Obat</CardTitle>
+          <CardTitle className="text-lg">Inventori Obat</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nama</TableHead>
-                <TableHead>Stok</TableHead>
-                <TableHead>Kategori</TableHead>
+              <TableRow className="bg-beige">
+                <TableHead className="text-navy font-bold">Nama</TableHead>
+                <TableHead className="text-navy font-bold">Stok</TableHead>
+                <TableHead className="text-navy font-bold">Kategori</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {medicines.map((medicine) => (
-                <TableRow key={medicine.id}>
-                  <TableCell>{medicine.name}</TableCell>
-                  <TableCell>{medicine.stock} {medicine.unit}</TableCell>
-                  <TableCell>{medicine.category}</TableCell>
+                <TableRow key={medicine.id} className="hover:bg-sky-blue/30 transition-colors">
+                  <TableCell className="font-medium text-navy">{medicine.name}</TableCell>
+                  <TableCell>
+                    <span className={medicine.stock < 50 ? "text-red-600 font-semibold" : "text-navy"}>
+                      {medicine.stock} {medicine.unit}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-navy">{medicine.category}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

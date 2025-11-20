@@ -33,14 +33,14 @@ export default function AdminReportPage() {
   return (
     <Card>
       <CardHeader className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-        <CardTitle>Laporan Klinik</CardTitle>
+        <CardTitle className="text-lg">Laporan Klinik</CardTitle>
         <form className="flex items-center gap-2" action={handleGenerate}>
           <Input
             name="period"
             placeholder={activeType === "DAILY" ? "2025-11-19" : "2025-11"}
             className="w-40"
           />
-          <Button disabled={pending} type="submit">
+          <Button className="bg-teal hover:bg-teal/90 text-white shadow-md" disabled={pending} type="submit">
             Generate
           </Button>
         </form>

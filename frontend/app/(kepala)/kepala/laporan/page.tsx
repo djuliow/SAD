@@ -6,7 +6,7 @@ export default function KepalaReportPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ringkasan Laporan</CardTitle>
+        <CardTitle className="text-lg">Ringkasan Laporan</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
         {reports.map((report) => (

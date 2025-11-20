@@ -4,33 +4,39 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* New color palette */
+    --navy: 215 30% 25%; /* #2F4156 */
+    --teal: 195 30% 50%; /* #567C8D */
+    --sky-blue: 210 30% 85%; /* #C8D9E6 */
+    --beige: 25 25% 95%; /* #F5EFEB */
+    
+    --background: 210 30% 85%; /* Sky Blue */
+    --foreground: 215 30% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 25 25% 98%; /* White/Beige */
+    --card-foreground: 215 30% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 25 25% 98%;
+    --popover-foreground: 215 30% 15%;
 
-    --primary: 217 91% 60%; /* #1A73E8 */
-    --primary-foreground: 210 40% 98%;
+    --primary: 195 30% 50%; /* Teal */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 215.4 16.3% 46.9%;
+    --secondary: 210 30% 80%;
+    --secondary-foreground: 215 30% 25%;
 
-    --accent: 159 70% 51%; /* #21C48A */
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 195 30% 50%; /* Teal */
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 30% 82%;
+    --muted-foreground: 215 30% 35%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217 91% 60%;
+    --border: 210 25% 75%;
+    --input: 210 25% 75%;
+    --ring: 195 30% 50%; /* Teal */
 
     --radius: 1rem; /* 16px */
   }
@@ -45,14 +51,14 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 217 91% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --accent: 159 70% 51%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 76% 45%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -62,16 +68,64 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 60%;
+    --ring: 217 91% 65%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .bg-navy {
+    background-color: #2F4156;
+  }
+  
+  .bg-teal {
+    background-color: #567C8D;
+  }
+  
+  .bg-sky-blue {
+    background-color: #C8D9E6;
+  }
+  
+  .bg-beige {
+    background-color: #F5EFEB;
+  }
+  
+  .text-navy {
+    color: #2F4156;
+  }
+  
+  .text-teal {
+    color: #567C8D;
+  }
+  
+  .border-navy {
+    border-color: #2F4156;
+  }
+  
+  .border-teal {
+    border-color: #567C8D;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  .animate-pulse {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .delay-1000 {
+    animation-delay: 1s;
   }
 }

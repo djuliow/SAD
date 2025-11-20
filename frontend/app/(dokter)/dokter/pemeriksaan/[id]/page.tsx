@@ -14,7 +14,7 @@ export default function PemeriksaanDetailPage({ params }: { params: { id: string
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Data Pasien</CardTitle>
+          <CardTitle className="text-lg">Data Pasien</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600">
           <p className="font-semibold text-slate-900">{patient?.name}</p>
@@ -26,7 +26,7 @@ export default function PemeriksaanDetailPage({ params }: { params: { id: string
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Catat Hasil Pemeriksaan</CardTitle>
+          <CardTitle className="text-lg">Catat Hasil Pemeriksaan</CardTitle>
         </CardHeader>
         <CardContent>
           <ExaminationForm doctorId="u-dokter" queueId={queue.id} />
@@ -34,7 +34,7 @@ export default function PemeriksaanDetailPage({ params }: { params: { id: string
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Buat Resep Obat</CardTitle>
+          <CardTitle className="text-lg">Buat Resep Obat</CardTitle>
         </CardHeader>
         <CardContent>
           <PrescriptionForm examId={latestExam?.id ?? "ex-001"} />
@@ -42,15 +42,15 @@ export default function PemeriksaanDetailPage({ params }: { params: { id: string
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Riwayat Pemeriksaan</CardTitle>
+          <CardTitle className="text-lg">Riwayat Pemeriksaan</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           {examinations
             .filter((exam) => exam.patientId === patient?.id)
             .map((exam) => (
-              <div key={exam.id} className="rounded-lg bg-slate-50 p-3">
-                <p className="font-semibold text-slate-800">{exam.diagnosis}</p>
-                <p className="text-xs text-slate-500">{exam.complaint}</p>
+              <div key={exam.id} className="rounded-lg bg-sky-blue/50 border border-navy/10 p-3 hover:bg-sky-blue/70 hover:shadow-md transition-all">
+                <p className="font-bold text-navy">{exam.diagnosis}</p>
+                <p className="text-xs text-navy/70 font-medium">{exam.complaint}</p>
               </div>
             ))}
         </CardContent>

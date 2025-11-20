@@ -5,17 +5,17 @@ export default function DokterHistoryPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Riwayat Pasien</CardTitle>
+        <CardTitle className="text-lg">Riwayat Pasien</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {examinations.map((exam) => {
           const patient = patients.find((p) => p.id === exam.patientId);
           return (
-            <div key={exam.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">{patient?.name}</p>
-              <p className="text-xs text-slate-500">{new Date(exam.createdAt).toLocaleString()}</p>
-              <p className="mt-2 text-sm text-slate-700">Keluhan: {exam.complaint}</p>
-              <p className="text-sm text-slate-700">Diagnosis: {exam.diagnosis}</p>
+            <div key={exam.id} className="rounded-2xl border border-navy/10 bg-sky-blue/50 p-4 hover:bg-sky-blue/70 hover:shadow-md transition-all">
+              <p className="text-sm font-bold text-navy">{patient?.name}</p>
+              <p className="text-xs text-navy/70 font-medium">{new Date(exam.createdAt).toLocaleString()}</p>
+              <p className="mt-2 text-sm text-navy font-medium">Keluhan: {exam.complaint}</p>
+              <p className="text-sm text-navy font-medium">Diagnosis: {exam.diagnosis}</p>
             </div>
           );
         })}

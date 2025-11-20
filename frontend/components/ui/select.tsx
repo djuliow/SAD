@@ -11,7 +11,7 @@ const SelectTrigger = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
     <SelectPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40",
+        "flex h-10 w-full items-center justify-between rounded-md border border-navy/20 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-colors text-navy",
         className
       )}
       {...props}
@@ -31,7 +31,7 @@ const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrimitive.C
       <SelectPrimitive.Content
         ref={ref}
         className={cn(
-          "z-50 min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-700 shadow-lg",
+          "z-50 min-w-[8rem] overflow-hidden rounded-md border border-navy/10 bg-white text-navy shadow-lg",
           className
         )}
         position={position}
@@ -50,10 +50,10 @@ const SelectItem = React.forwardRef<React.ElementRef<typeof SelectPrimitive.Item
   ({ className, children, ...props }, ref) => (
     <SelectPrimitive.Item
       ref={ref}
-      className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none focus:bg-primary/5 focus:text-primary",
-        className
-      )}
+        className={cn(
+          "relative flex w-full cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none focus:bg-teal/10 focus:text-teal",
+          className
+        )}
       {...props}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
