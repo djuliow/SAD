@@ -22,7 +22,7 @@ def register_patient(patient_create: PatientCreate):
     patients.append(new_patient.dict())
 
     next_queue_id = max([q.get("id", 0) for q in queue]) + 1 if queue else 1
-    new_queue_entry = QueueEntry(id=next_queue_id, patient_id=new_patient.id, patient_name=new_patient.nama, status="menunggu")
+    new_queue_entry = QueueEntry(id=next_queue_id, patient_id=new_patient.id, patient_name=new_patient.name, status="menunggu")
     queue.append(new_queue_entry.dict())
 
     db["patients"] = patients

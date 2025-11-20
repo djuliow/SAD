@@ -3,12 +3,18 @@ from typing import Optional
 
 class Patient(BaseModel):
     id: int
-    nama: str
-    alamat: str
-    keluhan: str
-    status: str # menunggu, diperiksa, selesai
+    medicalRecordNo: str
+    name: str
+    dob: str
+    gender: str  # L or P
+    phone: str
+    address: str
+    status: str  # menunggu, diperiksa, selesai
 
 class PatientCreate(BaseModel):
-    nama: str
-    alamat: str
-    keluhan: str
+    medicalRecordNo: str
+    name: str
+    dob: str
+    gender: str
+    phone: str
+    address: str
