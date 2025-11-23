@@ -85,6 +85,16 @@
       "phone": "081234567896",
       "address": "airmadidi",
       "status": "selesai"
+    },
+    {
+      "id": 107,
+      "medicalRecordNo": "RM003",
+      "name": "Juan ",
+      "dob": "2004-12-12",
+      "gender": "L",
+      "phone": "08493049034",
+      "address": "Airmadidi",
+      "status": "menunggu"
     }
   ],
   "queue": [
@@ -117,6 +127,12 @@
       "patient_id": 106,
       "patient_name": "Adriel",
       "status": "selesai"
+    },
+    {
+      "id": 6,
+      "patient_id": 107,
+      "patient_name": "Juan ",
+      "status": "menunggu"
     }
   ],
   "examinations": [
