@@ -53,11 +53,14 @@ export default function AdminReportPage() {
   return (
     <Card className="bg-white border border-navy/10 shadow-md">
       <CardHeader className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between bg-beige border-b border-navy/10">
-        <div className="flex items-center gap-4">
-          <CardTitle className="text-lg font-bold text-navy">Laporan Klinik</CardTitle>
-          <Button size="icon" variant="ghost" onClick={fetchReports} aria-label="Refresh">
-            <RefreshCw className="h-5 w-5 text-navy" />
-          </Button>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-4">
+            <CardTitle className="text-lg font-bold text-navy">Generator Laporan</CardTitle>
+            <Button size="icon" variant="ghost" onClick={fetchReports} aria-label="Refresh">
+              <RefreshCw className="h-5 w-5 text-navy" />
+            </Button>
+          </div>
+          <p className="text-xs text-navy/70">Pilih periode dan klik Generate untuk membuat laporan baru.</p>
         </div>
         <form className="flex items-center gap-2" onSubmit={handleGenerate}>
           <Input
@@ -73,14 +76,14 @@ export default function AdminReportPage() {
       <CardContent className="p-6">
         <Tabs defaultValue="DAILY" onValueChange={(value) => setActiveType(value)}>
           <TabsList className="bg-beige rounded-full p-1 inline-flex mb-6">
-            <TabsTrigger 
-              value="DAILY" 
+            <TabsTrigger
+              value="DAILY"
               className="rounded-full px-6 py-2 text-sm font-medium transition-all data-[state=active]:bg-teal data-[state=active]:text-white data-[state=active]:shadow-sm text-navy hover:bg-teal/10"
             >
               Harian
             </TabsTrigger>
-            <TabsTrigger 
-              value="MONTHLY" 
+            <TabsTrigger
+              value="MONTHLY"
               className="rounded-full px-6 py-2 text-sm font-medium transition-all data-[state=active]:bg-teal data-[state=active]:text-white data-[state=active]:shadow-sm text-navy hover:bg-teal/10"
             >
               Bulanan

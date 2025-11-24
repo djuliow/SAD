@@ -45,23 +45,25 @@ def generate_and_store_report(payload: dict = Body(...), session: Session = Depe
 
     # 2. Total unique patients from paid examinations in the period
     # Need to query examinations that were paid for in this period
-    paid_patients_count = session.exec(
-        select(func.count(func.distinct(Examination.patient_id)))
-        .where(Examination.id.in_(list(paid_examination_ids)))
-    ).first()
-    total_patients = paid_patients_count if paid_patients_count else 0
-
-
-    # 3. Drugs used from prescriptions linked to paid examinations in the period
+    total_patients = 0
     drugs_used = {}
-    prescriptions_in_period = session.exec(
-        select(Prescription, Drug)
-        .join(Drug)
-        .where(Prescription.examination_id.in_(list(paid_examination_ids)))
-    ).all()
     
-    for pres, drug in prescriptions_in_period:
-        drugs_used[drug.nama] = drugs_used.get(drug.nama, 0) + pres.quantity
+    if paid_examination_ids:
+        paid_patients_count = session.exec(
+            select(func.count(func.distinct(Examination.patient_id)))
+            .where(Examination.id.in_(list(paid_examination_ids)))
+        ).first()
+        total_patients = paid_patients_count if paid_patients_count else 0
+
+        # 3. Drugs used from prescriptions linked to paid examinations in the period
+        prescriptions_in_period = session.exec(
+            select(Prescription, Drug)
+            .join(Drug)
+            .where(Prescription.examination_id.in_(list(paid_examination_ids)))
+        ).all()
+        
+        for pres, drug in prescriptions_in_period:
+            drugs_used[drug.nama] = drugs_used.get(drug.nama, 0) + pres.quantity
 
     report_summary = ReportSummary(
         total_patients=total_patients,

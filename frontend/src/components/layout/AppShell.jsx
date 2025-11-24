@@ -37,6 +37,14 @@ function ActiveQueueInfo() { // role prop removed
       <p className="text-sm font-semibold text-white mt-1 bg-white/20 px-2 py-1 rounded">
         {lastPatient ? lastPatient.patient_name : "Tidak ada"}
       </p>
+      {lastPatient && (
+        <p className="text-xs text-teal-200 mt-1 capitalize">
+          Status: {lastPatient.status === 'menunggu' ? 'Menunggu' :
+            lastPatient.status === 'diperiksa' ? 'Sedang Diperiksa' :
+              lastPatient.status === 'membayar' ? 'Sedang Membayar' :
+                lastPatient.status === 'selesai' ? 'Selesai' : lastPatient.status}
+        </p>
+      )}
     </div>
   );
 }

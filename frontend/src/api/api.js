@@ -227,15 +227,29 @@ export async function upsertSchedule(payload) {
 
 
 export async function listEmployees() {
-
-
-
   const response = await apiRequest('/employees/');
-
-
-
   return response;
+}
 
+export async function createEmployee(payload) {
+  const response = await apiRequest('/employees/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return response;
+}
 
+export async function updateEmployee(id, payload) {
+  const response = await apiRequest(`/employees/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return response;
+}
 
+export async function deleteEmployee(id) {
+  const response = await apiRequest(`/employees/${id}`, {
+    method: 'DELETE',
+  });
+  return response;
 }

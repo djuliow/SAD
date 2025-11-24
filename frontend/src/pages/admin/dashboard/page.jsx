@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return <div className="text-center p-8">Memuat data dashboard...</div>
   }
-  
+
   if (!summary) {
     return <div className="text-center p-8">Gagal memuat data. Coba lagi nanti.</div>
   }
@@ -91,27 +91,62 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="bg-orange-50 border-orange-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-orange-700">Menunggu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-900">{summary.queue_counts?.menunggu || 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-700">Diperiksa</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-900">{summary.queue_counts?.diperiksa || 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-purple-50 border-purple-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-purple-700">Membayar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-900">{summary.queue_counts?.membayar || 0}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-50 border-green-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-green-700">Selesai</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-900">{summary.queue_counts?.selesai || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Antrean Terkini</CardTitle>
         </CardHeader>
         <CardContent>
-        <div className="space-y-3">
-          {recent_queues.length > 0 ? (
-            recent_queues.map((queue, index) => (
-              <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 px-4 py-3">
-                <p className="text-sm font-bold text-navy">
-                  <span className="text-xs text-slate-500 font-normal mr-1">{index + 1}.</span>
-                  {queue.patient_name}
-                  <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
-                </p>
-                {getStatusBadge(queue.status)}
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-center text-navy/70 py-4">Tidak ada antrean saat ini.</p>
-          )}
-        </div>
+          <div className="space-y-3">
+            {recent_queues.length > 0 ? (
+              recent_queues.map((queue, index) => (
+                <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 px-4 py-3">
+                  <p className="text-sm font-bold text-navy">
+                    <span className="text-xs text-slate-500 font-normal mr-1">{index + 1}.</span>
+                    {queue.patient_name}
+                    <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
+                  </p>
+                  {getStatusBadge(queue.status)}
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-center text-navy/70 py-4">Tidak ada antrean saat ini.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

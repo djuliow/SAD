@@ -19,6 +19,8 @@ import DokterHistoryPage from './pages/dokter/riwayat/page';
 import PemeriksaanDetailPage from './pages/dokter/pemeriksaan/[id]/page';
 import KepalaReportPage from './pages/kepala/laporan/page';
 import KepalaSchedulePage from './pages/kepala/jadwal/page';
+import KepalaKaryawanPage from './pages/kepala/karyawan/page';
+import KepalaPasienPage from './pages/kepala/pasien/page';
 
 import './index.css';
 
@@ -45,6 +47,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="dokter/pemeriksaan/:id" element={<PemeriksaanDetailPage />} />
           <Route path="kepala/laporan" element={<KepalaReportPage />} />
           <Route path="kepala/jadwal" element={<KepalaSchedulePage />} />
+          <Route path="kepala/karyawan" element={<KepalaKaryawanPage />} />
+          <Route path="kepala/pasien" element={<KepalaPasienPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

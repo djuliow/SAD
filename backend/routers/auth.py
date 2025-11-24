@@ -4,7 +4,11 @@ from typing import Dict
 from sqlmodel import Session, select
 from database import get_session
 from models.user import User # Import the SQLModel User
-from utils.jwt_dummy import generate_dummy_token # Keep for now as per plan
+# from utils.jwt_dummy import generate_dummy_token # Removed as file was deleted
+
+def generate_dummy_token(role: str):
+    import time
+    return f"dummy-token-{role}-{int(time.time())}"
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, date
 
 from sqlmodel import Session, select, func # Import func for aggregation
@@ -25,6 +25,7 @@ class AdminDashboardSummary(BaseModel):
     active_queue_count: int
     income_today: float
     recent_queues: List[RecentQueue]
+    queue_counts: Dict[str, int] # Added for queue counts by status
 
 # --------------------------
 
@@ -69,10 +70,19 @@ def get_admin_dashboard_summary(session: Session = Depends(get_session)):
             status=queue_entry.status
         ))
     
+    # 5. Queue Counts by Status
+    queue_counts = {
+        "menunggu": session.exec(select(func.count(QueueEntry.id)).where(QueueEntry.status == "menunggu")).one(),
+        "diperiksa": session.exec(select(func.count(QueueEntry.id)).where(QueueEntry.status == "diperiksa")).one(),
+        "membayar": session.exec(select(func.count(QueueEntry.id)).where(QueueEntry.status == "membayar")).one(),
+        "selesai": session.exec(select(func.count(QueueEntry.id)).where(QueueEntry.status == "selesai")).one(),
+    }
+
     return AdminDashboardSummary(
         total_patients_all_time=total_patients_all_time,
         patients_today_count=patients_today_count,
         active_queue_count=active_queue_count,
         income_today=income_today,
-        recent_queues=recent_queues
+        recent_queues=recent_queues,
+        queue_counts=queue_counts # Added to the response model
     )
