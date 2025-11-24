@@ -1,24 +1,20 @@
 
-import { useState, useTransition } from "react";
-import { fulfillPrescription } from "/src/api/api.js";
+import { useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 import { Button } from "/src/components/ui/button";
-import { toast } from "sonner";
 
-export function PrescriptionTable({ initialData }) {
-  const [data, setData] = useState(initialData);
+export function PrescriptionTable({ prescriptions, medicines, onFulfill, disabled }) {
   const [pending, startTransition] = useTransition();
 
+  const getMedicineName = (drugId) => {
+    const medicine = medicines.find((m) => m.id === drugId);
+    return medicine ? medicine.nama : "Obat tidak ditemukan";
+  };
+  
   const handleFulfill = (id) => {
-    startTransition(async () => {
-      try {
-        const updated = await fulfillPrescription(id);
-        setData((current) => current.map((item) => (item.id === id ? updated : item)));
-        toast.success("Resep selesai");
-      } catch (error) {
-        toast.error(error.message ?? "Gagal memperbarui status");
-      }
+    startTransition(() => {
+      onFulfill(id);
     });
   };
 
@@ -31,23 +27,25 @@ export function PrescriptionTable({ initialData }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead>ID Resep</TableHead>
               <TableHead>Obat</TableHead>
+              <TableHead>Kuantitas</TableHead>
               <TableHead>Status</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((prescription) => (
-              <TableRow key={prescription.id}>
-                <TableCell>{prescription.id}</TableCell>
-                <TableCell>{prescription.medicineId}</TableCell>
-                <TableCell>{prescription.sentToPharmacy ? "Menunggu" : "Selesai"}</TableCell>
+            {prescriptions.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell>{p.id}</TableCell>
+                <TableCell>{getMedicineName(p.drug_id)}</TableCell>
+                <TableCell>{p.quantity}</TableCell>
+                <TableCell className="capitalize">{p.status}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     size="sm"
-                    disabled={pending || !prescription.sentToPharmacy}
-                    onClick={() => handleFulfill(prescription.id)}
+                    disabled={disabled || pending || p.status === "selesai"}
+                    onClick={() => handleFulfill(p.id)}
                   >
                     Serahkan
                   </Button>

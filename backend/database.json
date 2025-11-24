@@ -25,156 +25,56 @@
       "role": "kepala"
     }
   ],
-  "patients": [
-    {
-      "id": 101,
-      "medicalRecordNo": "RM101",
-      "name": "Budi Santoso",
-      "dob": "1990-01-01",
-      "gender": "L",
-      "phone": "081234567890",
-      "address": "Airmadidi",
-      "status": "menunggu"
-    },
-    {
-      "id": 102,
-      "medicalRecordNo": "RM102",
-      "name": "Julio",
-      "dob": "1992-02-02",
-      "gender": "L",
-      "phone": "081234567891",
-      "address": "Minahasa",
-      "status": "selesai"
-    },
-    {
-      "id": 103,
-      "medicalRecordNo": "RM103",
-      "name": "Kenko",
-      "dob": "1985-03-03",
-      "gender": "L",
-      "phone": "081234567892",
-      "address": "Talaitad",
-      "status": "menunggu"
-    },
-    {
-      "id": 104,
-      "medicalRecordNo": "RM104",
-      "name": "Adriel",
-      "dob": "1995-04-04",
-      "gender": "L",
-      "phone": "081234567893",
-      "address": "airmadidi",
-      "status": "menunggu"
-    },
-    {
-      "id": 105,
-      "medicalRecordNo": "RM105",
-      "name": "",
-      "dob": "",
-      "gender": "L",
-      "phone": "",
-      "address": "",
-      "status": "selesai"
-    },
-    {
-      "id": 106,
-      "medicalRecordNo": "RM106",
-      "name": "Adriel",
-      "dob": "1991-07-07",
-      "gender": "L",
-      "phone": "081234567896",
-      "address": "airmadidi",
-      "status": "selesai"
-    },
-    {
-      "id": 107,
-      "medicalRecordNo": "RM003",
-      "name": "Juan ",
-      "dob": "2004-12-12",
-      "gender": "L",
-      "phone": "08493049034",
-      "address": "Airmadidi",
-      "status": "menunggu"
-    }
-  ],
-  "queue": [
+  "employees": [
     {
       "id": 1,
-      "patient_id": 102,
-      "patient_name": "Julio",
-      "status": "selesai"
+      "name": "Rahma",
+      "role": "admin"
     },
     {
       "id": 2,
-      "patient_id": 103,
-      "patient_name": "Kenko",
-      "status": "menunggu"
+      "name": "Dr. Bima",
+      "role": "dokter"
     },
     {
       "id": 3,
-      "patient_id": 104,
-      "patient_name": "Adriel",
-      "status": "menunggu"
+      "name": "Sari",
+      "role": "apoteker"
     },
     {
       "id": 4,
-      "patient_id": 105,
-      "patient_name": "",
-      "status": "selesai"
-    },
-    {
-      "id": 5,
-      "patient_id": 106,
-      "patient_name": "Adriel",
-      "status": "selesai"
-    },
-    {
-      "id": 6,
-      "patient_id": 107,
-      "patient_name": "Juan ",
-      "status": "menunggu"
+      "name": "Dina",
+      "role": "kepala"
     }
   ],
-  "examinations": [
-    {
-      "id": 1,
-      "patient_id": 102,
-      "doctor_id": 2,
-      "diagnosis": "demam",
-      "notes": "",
-      "date": "2025-11-11"
-    },
-    {
-      "id": 2,
-      "patient_id": 103,
-      "doctor_id": 10,
-      "diagnosis": "odinofagia (nyeri saat menelan) ",
-      "notes": "",
-      "date": "2025-11-12"
-    }
-  ],
-  "prescriptions": [
-    {
-      "id": 1,
-      "examination_id": 2,
-      "drug_id": 1,
-      "quantity": 1,
-      "notes": ""
-    },
-    {
-      "id": 2,
-      "examination_id": 2,
-      "drug_id": 1,
-      "quantity": 1,
-      "notes": ""
-    }
-  ],
+  "patients": [],
+  "queue": [],
+  "examinations": [],
+  "prescriptions": [],
   "drugs": [
     {
       "id": 1,
       "nama": "Paracetamol",
       "stok": 100,
       "harga": 5000
+    },
+    {
+      "id": 2,
+      "nama": "Amoxicillin",
+      "stok": 100,
+      "harga": 8000
+    },
+    {
+      "id": 3,
+      "nama": "cetirizine ",
+      "stok": 100,
+      "harga": 4000
+    },
+    {
+      "id": 4,
+      "nama": "Ketoconazole ",
+      "stok": 100,
+      "harga": 12000
     }
   ],
   "payments": [],

@@ -31,8 +31,8 @@ export async function listQueues(status) {
 }
 
 export async function advanceQueue(queueId, nextStatus) {
-  const response = await apiRequest(`/queue/${queueId}/advance`, {
-    method: 'PATCH',
+  const response = await apiRequest(`/queue/${queueId}`, {
+    method: 'PUT',
     body: JSON.stringify({ status: nextStatus }),
   });
   return response;
@@ -72,10 +72,10 @@ export async function createPrescription(examId, payload) {
   return response;
 }
 
-export async function listPrescriptions(sentToPharmacy) {
+export async function listPrescriptions(status) {
   let endpoint = '/prescriptions';
-  if (sentToPharmacy !== undefined) {
-    endpoint += `?sent_to_pharmacy=${sentToPharmacy}`;
+  if (status) {
+    endpoint += `?status=${status}`;
   }
   const response = await apiRequest(endpoint);
   return response;
@@ -84,6 +84,14 @@ export async function listPrescriptions(sentToPharmacy) {
 export async function fulfillPrescription(prescriptionId) {
   const response = await apiRequest(`/prescriptions/${prescriptionId}/fulfill`, {
     method: 'PATCH',
+  });
+  return response;
+}
+
+export async function createDrug(payload) {
+  const response = await apiRequest('/drugs', {
+    method: 'POST',
+    body: JSON.stringify(payload),
   });
   return response;
 }
@@ -101,8 +109,12 @@ export async function updateStock(medicineId, amount) {
   return response;
 }
 
-export async function listPayments() {
-  const response = await apiRequest('/payments');
+export async function listPayments(date) {
+  let endpoint = '/payments';
+  if (date) {
+    endpoint += `?date=${date}`;
+  }
+  const response = await apiRequest(endpoint);
   return response;
 }
 
@@ -114,12 +126,8 @@ export async function createPayment(payload) {
   return response;
 }
 
-export async function listReports(type) {
-  let endpoint = '/reports';
-  if (type) {
-    endpoint += `?type=${type}`;
-  }
-  const response = await apiRequest(endpoint);
+export async function listReports() {
+  const response = await apiRequest('/reports');
   return response;
 }
 
@@ -141,9 +149,25 @@ export async function listSchedules(role) {
 }
 
 export async function upsertSchedule(payload) {
+
   const response = await apiRequest('/schedules', {
+
     method: 'POST',
+
     body: JSON.stringify(payload),
+
   });
+
   return response;
+
+}
+
+
+
+export async function listEmployees() {
+
+  const response = await apiRequest('/employees');
+
+  return response;
+
 }

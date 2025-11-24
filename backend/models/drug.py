@@ -6,5 +6,10 @@ class Drug(BaseModel):
     stok: int
     harga: int
 
-class DrugUpdateStock(BaseModel):
+class DrugCreate(BaseModel):
+    nama: str
     stok: int
+    harga: int
+
+class DrugUpdateStock(BaseModel):
+    change_amount: int

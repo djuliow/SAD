@@ -8,7 +8,6 @@ import { Button } from "/src/components/ui/button";
 import { Input } from "/src/components/ui/input";
 import { Label } from "/src/components/ui/label";
 import { Select, SelectItem } from "/src/components/ui/select";
-import { medicines } from "/src/lib/mockData";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -16,11 +15,12 @@ const schema = z.object({
   amount: z.number().min(-100).max(500)
 });
 
-export function MedicineForm() {
+export function MedicineForm({ medicines = [], onSuccess }) {
   const {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(schema),
@@ -33,6 +33,8 @@ export function MedicineForm() {
       try {
         await updateStock(values.medicineId, values.amount);
         toast.success("Stok diperbarui");
+        reset();
+        onSuccess?.();
       } catch (error) {
         toast.error(error.message ?? "Gagal memperbarui stok");
       }
@@ -49,8 +51,8 @@ export function MedicineForm() {
           className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {medicines.map((med) => (
-            <SelectItem key={med.id} value={med.id}>
-              {med.name}
+            <SelectItem key={med.id} value={String(med.id)}>
+              {med.nama}
             </SelectItem>
           ))}
         </Select>

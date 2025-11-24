@@ -1,16 +1,37 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 import { Button } from "/src/components/ui/button";
-import { queues, patients } from "/src/lib/mockData";
+import { listQueues } from "/src/api/api.js";
+import { toast } from "sonner";
+import { RefreshCw } from "lucide-react";
 
 export default function DokterQueuePage() {
-  const doctorQueues = queues.filter((queue) => queue.doctorId === "u-dokter");
+  const [queues, setQueues] = useState([]);
+
+  const fetchQueues = async () => {
+    try {
+      const data = await listQueues();
+      // Filter for patients who are ready to be examined
+      const doctorQueues = data.filter((queue) => queue.status === "diperiksa");
+      setQueues(doctorQueues);
+    } catch (error) {
+      toast.error(error.message ?? "Gagal memuat data antrean");
+    }
+  };
+
+  useEffect(() => {
+    fetchQueues();
+  }, []);
 
   return (
     <Card className="bg-white border border-navy/10 shadow-md">
-      <CardHeader className="bg-beige border-b border-navy/10">
+      <CardHeader className="bg-beige border-b border-navy/10 flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-bold text-navy">Antrean Pemeriksaan</CardTitle>
+        <Button size="icon" variant="ghost" onClick={fetchQueues} aria-label="Refresh">
+          <RefreshCw className="h-5 w-5 text-navy" />
+        </Button>
       </CardHeader>
       <CardContent className="p-6 pt-8">
         <div className="rounded-md border border-navy/10 shadow-sm overflow-hidden">
@@ -23,10 +44,10 @@ export default function DokterQueuePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {doctorQueues.map((queue) => (
+              {queues.map((queue) => (
                 <TableRow key={queue.id} className="bg-white hover:bg-sky-blue/30 transition-colors border-b border-navy/5">
-                  <TableCell className="font-medium text-navy pl-6 py-4">{patients.find((p) => p.id === queue.patientId)?.name}</TableCell>
-                  <TableCell className="text-navy py-4">{queue.status}</TableCell>
+                  <TableCell className="font-medium text-navy pl-6 py-4">{queue.patient_name}</TableCell>
+                  <TableCell className="text-navy py-4 capitalize">{queue.status}</TableCell>
                   <TableCell className="text-right py-4 pr-6">
                     <Link to={`/dokter/pemeriksaan/${queue.id}`}>
                       <Button

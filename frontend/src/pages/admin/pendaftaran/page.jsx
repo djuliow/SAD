@@ -1,9 +1,26 @@
+import { useEffect, useState } from "react";
 import { PatientForm } from "/src/components/forms/patient-form";
+import { listPatients } from "/src/api/api";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
-import { patients } from "/src/lib/mockData";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 
 export default function AdminRegistrationPage() {
+  const [patients, setPatients] = useState([]);
+
+  const fetchPatients = async () => {
+    try {
+      const data = await listPatients();
+      setPatients(data);
+    } catch (error) {
+      console.error("Failed to fetch patients:", error);
+      // Optionally, show an error message to the user
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
   return (
     <div className="grid gap-6 lg:grid-cols-[400px,1fr]">
       <Card>
@@ -11,7 +28,7 @@ export default function AdminRegistrationPage() {
           <CardTitle className="text-lg">Pendaftaran Pasien</CardTitle>
         </CardHeader>
         <CardContent>
-          <PatientForm />
+          <PatientForm onSuccess={fetchPatients} />
         </CardContent>
       </Card>
       <Card>
