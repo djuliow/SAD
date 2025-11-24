@@ -37,12 +37,43 @@ def get_prescriptions(status: Optional[str] = None):
 def fulfill_prescription(prescription_id: int):
     db = read_db()
     prescriptions = db.get("prescriptions", [])
+    drugs = db.get("drugs", [])
     
+    prescription_to_fulfill = None
+    prescription_index = -1
+
     for i, p in enumerate(prescriptions):
         if p.get("id") == prescription_id:
-            prescriptions[i]["status"] = "selesai"
-            db["prescriptions"] = prescriptions
-            write_db(db)
-            return prescriptions[i]
+            if p.get("status") == "selesai":
+                raise HTTPException(status_code=400, detail="Prescription already fulfilled")
+            prescription_to_fulfill = p
+            prescription_index = i
+            break
+
+    if not prescription_to_fulfill:
+        raise HTTPException(status_code=404, detail="Prescription not found")
+
+    # Find the drug and decrease stock
+    drug_to_update = None
+    for i, d in enumerate(drugs):
+        if d.get("id") == prescription_to_fulfill["drug_id"]:
+            # Check if there is enough stock
+            if d["stok"] < prescription_to_fulfill["quantity"]:
+                raise HTTPException(status_code=400, detail=f"Not enough stock for {d['nama']}. Required: {prescription_to_fulfill['quantity']}, available: {d['stok']}")
             
-    raise HTTPException(status_code=404, detail="Prescription not found")
+            drugs[i]["stok"] -= prescription_to_fulfill["quantity"]
+            drug_to_update = drugs[i]
+            break
+
+    if not drug_to_update:
+        raise HTTPException(status_code=404, detail="Drug in prescription not found in stock")
+        
+    # Update prescription status
+    prescriptions[prescription_index]["status"] = "selesai"
+
+    # Save changes to DB
+    db["prescriptions"] = prescriptions
+    db["drugs"] = drugs
+    write_db(db)
+    
+    return prescriptions[prescription_index]

@@ -18,9 +18,17 @@ class Examination(BaseModel):
     id: int
     patient_id: int
     doctor_id: int
+    complaint: str
     diagnosis: str
     notes: str
     date: str
+
+class ExaminationCreate(BaseModel):
+    queue_id: int
+    doctor_id: int
+    complaint: str
+    diagnosis: str
+    notes: str
 
 class Prescription(BaseModel):
     id: Optional[int] = None

@@ -1,5 +1,8 @@
 import json, os
-DB_PATH = "database.json"
+
+# Construct an absolute path to the database file to avoid CWD issues
+script_dir = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(script_dir, '..', 'database.json')
 
 def read_db():
     if not os.path.exists(DB_PATH):

@@ -13,7 +13,7 @@ export default function ApotekPrescriptionPage() {
     setLoading(true);
     try {
       const [prescriptionsData, medicinesData] = await Promise.all([
-        listPrescriptions(), // Fetch all prescriptions
+        listPrescriptions("menunggu"), // Fetch only pending prescriptions
         listMedicines(),
       ]);
       setPrescriptions(prescriptionsData);

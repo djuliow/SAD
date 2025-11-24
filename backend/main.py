@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, patients, queue, doctors, drugs, payments, reports, schedules, prescriptions, employees
+from routers import auth, patients, queue, doctors, drugs, payments, reports, schedules, prescriptions, employees, bills
 
 app = FastAPI(title="Klinik Sentosa API", version="1.0")
 
@@ -28,6 +28,7 @@ app.include_router(reports.router)
 app.include_router(schedules.router)
 app.include_router(prescriptions.router)
 app.include_router(employees.router)
+app.include_router(bills.router)
 
 @app.get("/")
 def root():

@@ -47,36 +47,98 @@
       "role": "kepala"
     }
   ],
-  "patients": [],
-  "queue": [],
-  "examinations": [],
-  "prescriptions": [],
+  "patients": [
+    {
+      "id": 101,
+      "medicalRecordNo": "RM001",
+      "name": "Alan Walker",
+      "dob": "2000-11-11",
+      "gender": "L",
+      "phone": "08123123123",
+      "address": "Tondano",
+      "status": "selesai"
+    },
+    {
+      "id": 102,
+      "medicalRecordNo": "RM002",
+      "name": "Mariana Laran",
+      "dob": "2008-02-22",
+      "gender": "P",
+      "phone": "08999999999",
+      "address": "Manado",
+      "status": "menunggu"
+    },
+    {
+      "id": 103,
+      "medicalRecordNo": "RM003",
+      "name": "Diego Forlan",
+      "dob": "2010-10-31",
+      "gender": "L",
+      "phone": "089232323232",
+      "address": "Tomohon",
+      "status": "menunggu"
+    }
+  ],
+  "payments": [
+    {
+      "id": 1,
+      "patient_id": 101,
+      "examination_id": 1,
+      "drug_cost": 30000,
+      "examination_fee": 50000,
+      "total_amount": 80000,
+      "payment_date": "2025-11-24T20:01:04.082654",
+      "method": "Tunai",
+      "status": "LUNAS"
+    }
+  ],
+  "queue": [
+    {
+      "id": 1,
+      "patient_id": 101,
+      "patient_name": "Alan Walker",
+      "status": "selesai"
+    },
+    {
+      "id": 2,
+      "patient_id": 102,
+      "patient_name": "Mariana Laran",
+      "status": "menunggu"
+    },
+    {
+      "id": 3,
+      "patient_id": 103,
+      "patient_name": "Diego Forlan",
+      "status": "menunggu"
+    }
+  ],
   "drugs": [
     {
       "id": 1,
       "nama": "Paracetamol",
-      "stok": 100,
-      "harga": 5000
-    },
-    {
-      "id": 2,
-      "nama": "Amoxicillin",
-      "stok": 100,
-      "harga": 8000
-    },
-    {
-      "id": 3,
-      "nama": "cetirizine ",
-      "stok": 100,
-      "harga": 4000
-    },
-    {
-      "id": 4,
-      "nama": "Ketoconazole ",
-      "stok": 100,
-      "harga": 12000
+      "stok": 97,
+      "harga": 10000
     }
   ],
-  "payments": [],
-  "reports": []
+  "examinations": [
+    {
+      "id": 1,
+      "patient_id": 101,
+      "doctor_id": 2,
+      "complaint": "Demam",
+      "diagnosis": "Demam berdarah",
+      "notes": "Perbanyak minum air putih",
+      "date": "2025-11-24T19:59:42.739686"
+    }
+  ],
+  "prescriptions": [
+    {
+      "id": 1,
+      "examination_id": 1,
+      "drug_id": 1,
+      "quantity": 3,
+      "notes": "Sesuai anjuran dokter",
+      "status": "selesai"
+    }
+  ]
 }

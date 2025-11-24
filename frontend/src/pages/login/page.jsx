@@ -30,7 +30,7 @@ export default function LoginPage() {
     startTransition(async () => {
       try {
         const auth = await authenticate(form.username, form.password, form.role);
-        const { token, ...user } = auth;
+        const { user, token } = auth;
         // Convert role to uppercase to match navigation keys
         const normalizedUser = { ...user, role: user.role.toUpperCase() };
         setAuth({ user: normalizedUser, token });

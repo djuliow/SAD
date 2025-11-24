@@ -1,79 +1,101 @@
-
-import { useTransition } from "react";
-import { payments, patients } from "/src/lib/mockData";
-import { createPayment } from "/src/api/api.js";
+import { useEffect, useState, useTransition, useCallback } from "react";
+import { listPendingBills, listPayments } from "/src/api/api.js";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
-import { Input } from "/src/components/ui/input";
 import { Button } from "/src/components/ui/button";
-import { PaymentCard } from "/src/components/cards/payment-card";
+import { PendingBillCard } from "/src/components/cards/PendingBillCard";
+import { PaymentCard } from "/src/components/cards/payment-card"; // Assuming this component exists
 import { toast } from "sonner";
+import { RefreshCw } from "lucide-react";
 
 export default function AdminPaymentPage() {
-  const [pending, startTransition] = useTransition();
+  const [pendingBills, setPendingBills] = useState([]);
+  const [paidBills, setPaidBills] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, startRefresh] = useTransition();
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    startTransition(async () => {
-      try {
-        await createPayment({
-          patientId: formData.get("patientId"),
-          amount: Number(formData.get("amount")),
-          method: formData.get("method") ?? "cash"
-        });
-        toast.success("Pembayaran berhasil");
-      } catch (error) {
-        toast.error(error.message ?? "Gagal memproses pembayaran");
-      }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [pendingData, paidData] = await Promise.all([
+        listPendingBills(),
+        listPayments(),
+      ]);
+      setPendingBills(pendingData);
+      // Sort paid bills, newest first
+      setPaidBills(paidData.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date)));
+    } catch (error) {
+      toast.error(error.message ?? "Gagal mengambil data pembayaran");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleRefresh = () => {
+    startRefresh(async () => {
+      await fetchData();
     });
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
-      <Card className="bg-white border border-navy/10 shadow-md h-fit">
-        <CardHeader className="bg-beige border-b border-navy/10">
-          <CardTitle className="text-lg font-bold text-navy">Pencatatan Pembayaran</CardTitle>
+    <div className="grid gap-6 lg:grid-cols-2">
+      {/* Pending Bills Section */}
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 flex flex-row items-center justify-between">
+          <CardTitle className="text-lg font-bold text-navy">Tagihan Tertunda</CardTitle>
+          <Button
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+            className="bg-teal hover:bg-teal/90 text-white flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing || isLoading ? 'animate-spin' : ''}`} />
+            <span>Segarkan</span>
+          </Button>
         </CardHeader>
-        <CardContent className="p-6 pt-8">
-          <form className="space-y-6" onSubmit={onSubmit}>
-            <div>
-              <p className="text-xs uppercase text-slate-600 font-medium mb-2">Pasien</p>
-              <select name="patientId" className="h-10 w-full rounded-md border border-navy/20 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-colors shadow-sm text-navy">
-                {patients.map((patient) => (
-                  <option key={patient.id} value={patient.id}>
-                    {patient.name}
-                  </option>
-                ))}
-              </select>
+        <CardContent className="p-6 space-y-4">
+          {isLoading ? (
+            <p className="text-center text-slate-500 py-10">Memuat tagihan...</p>
+          ) : pendingBills.length > 0 ? (
+            pendingBills.map((bill) => (
+              <PendingBillCard
+                key={bill.examination_id}
+                bill={bill}
+                onPaymentSuccess={handleRefresh}
+              />
+            ))
+          ) : (
+            <div className="text-center py-10">
+              <h3 className="text-lg font-semibold text-slate-800">Tidak ada tagihan tertunda</h3>
+              <p className="text-slate-500 mt-2">Semua pembayaran sudah lunas.</p>
             </div>
-            <div>
-              <p className="text-xs uppercase text-slate-600 font-medium mb-2">Nominal</p>
-              <Input name="amount" type="number" placeholder="150000" required />
-            </div>
-            <div>
-              <p className="text-xs uppercase text-slate-600 font-medium mb-1">Metode</p>
-              <select name="method" className="h-10 w-full rounded-md border border-navy/20 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-colors shadow-sm text-navy">
-                <option value="cash">Tunai</option>
-                <option value="transfer">Transfer</option>
-                <option value="card">Kartu</option>
-              </select>
-            </div>
-            <Button className="w-full bg-teal hover:bg-teal/90 text-white shadow-sm" disabled={pending} type="submit">
-              Catat Pembayaran
-            </Button>
-          </form>
+          )}
         </CardContent>
       </Card>
+      
+      {/* Payment History Section */}
       <Card className="bg-white border border-navy/10 shadow-md">
         <CardHeader className="bg-beige border-b border-navy/10">
           <CardTitle className="text-lg font-bold text-navy">Riwayat Pembayaran</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-        <div className="rounded-md border border-navy/10 p-4 space-y-3">
-          {payments.map((payment) => (
-            <PaymentCard key={payment.id} payment={payment} />
-          ))}
-        </div>
+        <CardContent className="p-6 space-y-4">
+          {isLoading ? (
+            <p className="text-center text-slate-500 py-10">Memuat riwayat...</p>
+          ) : paidBills.length > 0 ? (
+            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+              {paidBills.map((payment) => (
+                <PaymentCard key={payment.id} payment={payment} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <h3 className="text-lg font-semibold text-slate-800">Belum ada riwayat pembayaran</h3>
+              <p className="text-slate-500 mt-2">Belum ada transaksi yang selesai.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

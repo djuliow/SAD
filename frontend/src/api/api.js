@@ -38,13 +38,18 @@ export async function advanceQueue(queueId, nextStatus) {
   return response;
 }
 
+export async function getQueueDetails(queueId) {
+  const response = await apiRequest(`/queue/${queueId}/details`);
+  return response;
+}
+
 export async function createExamination(queueId, doctorId, payload) {
   const requestBody = {
     queue_id: queueId,
     doctor_id: doctorId,
     ...payload
   };
-  const response = await apiRequest('/examinations', {
+  const response = await apiRequest('/doctors/examinations', {
     method: 'POST',
     body: JSON.stringify(requestBody),
   });
@@ -115,6 +120,11 @@ export async function listPayments(date) {
     endpoint += `?date=${date}`;
   }
   const response = await apiRequest(endpoint);
+  return response;
+}
+
+export async function listPendingBills() {
+  const response = await apiRequest('/bills/pending');
   return response;
 }
 

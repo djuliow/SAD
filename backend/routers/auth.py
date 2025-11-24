@@ -12,11 +12,12 @@ class UserLogin(BaseModel):
     role: str
 
 @router.post("/login")
-def login(user_login: UserLogin) -> Dict[str, str]:
+def login(user_login: UserLogin):
     db = read_db()
     users = db.get("users", [])
     for user in users:
         if user["username"] == user_login.username and user["password"] == user_login.password and user["role"] == user_login.role:
             token = generate_dummy_token(user["role"])
-            return {"username": user["username"], "role": user["role"], "token": token}
+            # Return the full user object
+            return {"user": user, "token": token}
     raise HTTPException(status_code=401, detail="Invalid credentials or role")

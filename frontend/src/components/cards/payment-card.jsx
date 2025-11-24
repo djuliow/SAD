@@ -8,10 +8,11 @@ export function PaymentCard({ payment }) {
     <div className="rounded-xl border border-navy/10 bg-sky-blue/50 p-4 shadow-sm hover:bg-sky-blue/30 transition-all">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-500">{format(new Date(payment.createdAt), "dd MMM yyyy HH:mm", { locale: id })}</p>
-          <p className="text-lg font-semibold text-slate-900">{formatCurrency(payment.amount)}</p>
+          <p className="text-base font-semibold text-navy">{payment.patient_name}</p>
+          <p className="text-sm text-slate-500">{format(new Date(payment.payment_date), "dd MMM yyyy HH:mm", { locale: id })}</p>
+          <p className="text-lg font-semibold text-slate-900">{formatCurrency(payment.total_amount)}</p>
         </div>
-        <Badge variant="success">{payment.status}</Badge>
+        <Badge variant="success" className="capitalize">{payment.status}</Badge>
       </div>
       <p className="mt-2 text-sm text-slate-500">Metode: {payment.method}</p>
     </div>
