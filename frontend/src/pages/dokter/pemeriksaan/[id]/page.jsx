@@ -27,12 +27,13 @@ export default function PemeriksaanDetailPage() {
   // Form state
   const [complaint, setComplaint] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
-  const [notes, setNotes] = useState("");
+  const [examinationNotes, setExaminationNotes] = useState("");
   const [prescribedMedicines, setPrescribedMedicines] = useState([]);
 
   // Prescription sub-form state
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [instructions, setInstructions] = useState(""); // Empty default for instructions
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,24 +55,46 @@ export default function PemeriksaanDetailPage() {
   const handleAddMedicine = (e) => {
     e.preventDefault();
     if (!selectedMedicine || quantity <= 0) {
-      toast.warning("Pilih obat dan tentukan jumlahnya.");
+      toast.warning("Pilih obat dan tentukan jumlahnya dengan benar.");
       return;
     }
+
     const medicineDetails = allMedicines.find((m) => m.id === parseInt(selectedMedicine));
-    if (prescribedMedicines.some(m => m.drug_id === medicineDetails.id)) {
-      toast.warning(`${medicineDetails.nama} sudah ada di resep.`);
+    if (!medicineDetails) {
+      toast.error("Obat tidak ditemukan.");
       return;
     }
+
+    if (prescribedMedicines.some(m => m.drug_id === medicineDetails.id)) {
+      toast.warning(`${medicineDetails.nama} sudah ada di daftar resep.`);
+      return;
+    }
+
+    // Check if there's sufficient stock
+    if (medicineDetails.stok < quantity) {
+      toast.error(`Stok tidak mencukupi. Tersedia: ${medicineDetails.stok}, permintaan: ${quantity}`);
+      return;
+    }
+
     setPrescribedMedicines([
       ...prescribedMedicines,
-      { drug_id: medicineDetails.id, drug_name: medicineDetails.nama, quantity: parseInt(quantity) },
+      {
+        drug_id: medicineDetails.id,
+        drug_name: medicineDetails.nama,
+        quantity: parseInt(quantity),
+        notes: instructions || "Sesuai anjuran dokter" // Use default if no instructions provided
+      },
     ]);
     setSelectedMedicine("");
     setQuantity(1);
+    setInstructions("");
+    toast.success(`${medicineDetails.nama} ditambahkan ke resep.`);
   };
-  
+
   const handleRemoveMedicine = (drugId) => {
+    const medicine = allMedicines.find(m => m.id === drugId);
     setPrescribedMedicines(prescribedMedicines.filter((m) => m.drug_id !== drugId));
+    toast.info(`${medicine?.nama || 'Obat'} dihapus dari resep.`);
   };
 
   const handleFinishExamination = () => {
@@ -79,31 +102,33 @@ export default function PemeriksaanDetailPage() {
       toast.warning("Diagnosis tidak boleh kosong.");
       return;
     }
-    
+
     startSubmitting(async () => {
       try {
         // Step 1: Create Examination
-        const examPayload = { complaint, diagnosis, notes };
+        const examPayload = { complaint, diagnosis, notes: examinationNotes };
         const newExamination = await createExamination(queueId, user.id, examPayload);
         toast.success("Hasil pemeriksaan tersimpan.");
 
         // Step 2: Create Prescriptions if any
         if (prescribedMedicines.length > 0) {
-          await Promise.all(
-            prescribedMedicines.map((med) =>
-              createPrescription(newExamination.id, {
-                drug_id: med.drug_id,
-                quantity: med.quantity,
-                notes: "Sesuai anjuran dokter",
-              })
-            )
+          const prescriptionPromises = prescribedMedicines.map((med) =>
+            createPrescription(newExamination.id, {
+              drug_id: med.drug_id,
+              quantity: med.quantity,
+              notes: med.notes, // Using the specific instructions for this medicine
+            })
           );
-          toast.success("Resep berhasil dibuat.");
+
+          await Promise.all(prescriptionPromises);
+          toast.success(`Resep berhasil dibuat untuk ${prescribedMedicines.length} obat.`);
+        } else {
+          toast.info("Tidak ada obat yang diresepkan.");
         }
 
-        // Step 3: Update queue status
-        await advanceQueue(queueId, "selesai");
-        toast.success("Pemeriksaan selesai.");
+        // Step 3: Update queue status to 'apotek' (goes to pharmacy)
+        await advanceQueue(queueId, "apotek");
+        toast.success("Pemeriksaan selesai, pasien menuju apotek.");
 
         // Step 4: Navigate back to queue
         navigate("/dokter/antrian");
@@ -145,8 +170,8 @@ export default function PemeriksaanDetailPage() {
               <Textarea id="diagnosis" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder="cth: Demam berdarah" required />
             </div>
             <div>
-              <Label htmlFor="notes">Catatan Tambahan</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="cth: Perbanyak istirahat dan minum air putih" />
+              <Label htmlFor="examinationNotes">Catatan Pemeriksaan</Label>
+              <Textarea id="examinationNotes" value={examinationNotes} onChange={(e) => setExaminationNotes(e.target.value)} placeholder="cth: Perbanyak istirahat dan minum air putih" />
             </div>
         </CardContent>
       </Card>
@@ -155,37 +180,86 @@ export default function PemeriksaanDetailPage() {
         <CardHeader className="bg-beige border-b border-navy/10">
           <CardTitle className="text-lg font-bold text-navy">Resep Obat</CardTitle>
         </CardHeader>
-        <CardContent className="p-6 space-y-4">
-          <form onSubmit={handleAddMedicine} className="flex items-end gap-4">
-            <div className="flex-grow">
+        <CardContent className="p-6 space-y-6">
+          {/* Add Medicine Form */}
+          <form onSubmit={handleAddMedicine} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div className="md:col-span-5">
               <Label>Obat</Label>
               <select value={selectedMedicine} onChange={(e) => setSelectedMedicine(e.target.value)} className="h-10 w-full rounded-md border border-navy/20 bg-white px-3 text-sm">
                 <option value="" disabled>Pilih obat...</option>
-                {allMedicines.map(m => <option key={m.id} value={m.id}>{m.nama}</option>)}
+                {allMedicines
+                  .filter(m => m.stok > 0) // Only show medicines with available stock
+                  .map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.nama} (Stok: {m.stok})
+                    </option>
+                  ))}
               </select>
             </div>
-            <div>
+            <div className="md:col-span-2">
               <Label>Jumlah</Label>
-              <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="w-24" min="1" />
+              <Input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                className="w-full"
+                min="1"
+              />
             </div>
-            <Button type="submit">Tambah</Button>
+            <div className="md:col-span-4">
+              <Label>Cara Pakai / Instruksi</Label>
+              <Input
+                type="text"
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder="Contoh: 3x1 sebelum makan, sesudah makan, dll"
+                className="w-full"
+              />
+            </div>
+            <div className="md:col-span-1 flex items-end">
+              <Button type="submit" className="w-full">Tambah</Button>
+            </div>
           </form>
-          {prescribedMedicines.length > 0 && (
-            <div className="rounded-md border border-navy/10 overflow-hidden">
-              <Table>
-                <TableHeader><TableRow><TableHead>Obat</TableHead><TableHead>Jumlah</TableHead><TableHead></TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {prescribedMedicines.map(med => (
-                    <TableRow key={med.drug_id}>
-                      <TableCell>{med.drug_name}</TableCell>
-                      <TableCell>{med.quantity}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveMedicine(med.drug_id)}><X className="h-4 w-4 text-red-500" /></Button>
-                      </TableCell>
+
+          {/* Prescribed Medicines List */}
+          {prescribedMedicines.length > 0 ? (
+            <div>
+              <h3 className="font-medium text-navy mb-2">Daftar Obat Diresepkan ({prescribedMedicines.length})</h3>
+              <div className="rounded-md border border-navy/10 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Obat</TableHead>
+                      <TableHead>Jumlah</TableHead>
+                      <TableHead>Cara Pakai</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {prescribedMedicines.map(med => (
+                      <TableRow key={med.drug_id}>
+                        <TableCell className="font-medium">{med.drug_name}</TableCell>
+                        <TableCell>{med.quantity}</TableCell>
+                        <TableCell>{med.notes}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveMedicine(med.drug_id)}
+                            title="Hapus dari resep"
+                          >
+                            <X className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-slate-500 border-2 border-dashed border-slate-300 rounded-lg">
+              Belum ada obat yang diresepkan
             </div>
           )}
         </CardContent>

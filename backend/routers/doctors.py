@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
+from sqlmodel import Session, select, func
+from database import get_session
 from models.report import Examination, ExaminationCreate
-from utils.json_db import read_db, write_db
+from models.queue import QueueEntry
+from models.patient import Patient
 
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
@@ -13,79 +16,82 @@ class LatestExaminationSummary(BaseModel):
     patient_name: str
     diagnosis: str
     date: str
+    patient_status: str  # Include patient status
 
 class DashboardSummary(BaseModel):
     waiting_count: int
     in_progress_count: int
+    pharmacy_count: int  # New field for 'apotek' status
+    payment_pending_count: int  # New field for 'membayar' status
     latest_examination: Optional[LatestExaminationSummary] = None
 
-# --------------------------
-
 @router.get("/dashboard-summary", response_model=DashboardSummary)
-def get_dashboard_summary(doctor_id: int = Query(...)):
-    db = read_db()
-    queues = db.get("queue", [])
-    examinations = db.get("examinations", [])
-    patients = db.get("patients", [])
-
-    # Calculate queue counts
-    waiting_count = len([q for q in queues if q["status"] == "menunggu"])
-    in_progress_count = len([q for q in queues if q["status"] == "diperiksa"])
-
-    # Find doctor's latest examination
-    doctors_examinations = [e for e in examinations if e["doctor_id"] == doctor_id]
-    if not doctors_examinations:
-        return DashboardSummary(
-            waiting_count=waiting_count,
-            in_progress_count=in_progress_count,
-            latest_examination=None
+def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depends(get_session)):
+    # Count waiting queues
+    waiting_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "menunggu")
+    ).one()
+    # Count in-progress queues
+    in_progress_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "diperiksa")
+    ).one()
+    # Count pharmacy queues
+    pharmacy_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "apotek")
+    ).one()
+    # Count payment pending queues
+    payment_pending_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "membayar")
+    ).one()
+    # Latest examination for the doctor
+    latest_exam_with_patient = session.exec(
+        select(Examination, Patient)
+        .join(Patient, Examination.patient_id == Patient.id)
+        .where(Examination.doctor_id == doctor_id)
+        .order_by(Examination.date.desc())
+    ).first()
+    latest_exam_summary = None
+    if latest_exam_with_patient:
+        latest_exam, patient = latest_exam_with_patient
+        latest_exam_summary = LatestExaminationSummary(
+            patient_name=patient.name,
+            diagnosis=latest_exam.diagnosis,
+            date=latest_exam.date.isoformat(),
+            patient_status=patient.status
         )
-
-    latest_exam = max(doctors_examinations, key=lambda e: e['date'])
-    
-    patient_name = "Unknown"
-    patient = next((p for p in patients if p["id"] == latest_exam["patient_id"]), None)
-    if patient:
-        patient_name = patient["name"]
-        
-    latest_exam_summary = LatestExaminationSummary(
-        patient_name=patient_name,
-        diagnosis=latest_exam["diagnosis"],
-        date=latest_exam["date"]
-    )
-
     return DashboardSummary(
         waiting_count=waiting_count,
         in_progress_count=in_progress_count,
+        pharmacy_count=pharmacy_count,
+        payment_pending_count=payment_pending_count,
         latest_examination=latest_exam_summary
     )
 
-
 @router.post("/examinations", response_model=Examination)
-def create_examination_record(payload: ExaminationCreate):
-    db = read_db()
-    examinations = db.get("examinations", [])
-    queues = db.get("queue", [])
-
-    # Find patient_id from queue
-    queue_entry = next((q for q in queues if q["id"] == payload.queue_id), None)
+def create_examination_record(payload: ExaminationCreate, session: Session = Depends(get_session)):
+    queue_entry = session.exec(
+        select(QueueEntry).where(QueueEntry.id == payload.queue_id)
+    ).first()
     if not queue_entry:
         raise HTTPException(status_code=404, detail="Queue entry not found")
-
-    next_examination_id = max([e.get("id", 0) for e in examinations]) + 1 if examinations else 1
-    
     new_examination = Examination(
-        id=next_examination_id,
-        patient_id=queue_entry["patient_id"],
+        patient_id=queue_entry.patient_id,
         doctor_id=payload.doctor_id,
         complaint=payload.complaint,
         diagnosis=payload.diagnosis,
         notes=payload.notes,
-        date=datetime.now().isoformat()
+        # date will be set by default_factory in the model
     )
-
-    examinations.append(new_examination.dict())
-    db["examinations"] = examinations
-    write_db(db)
-    
+    session.add(new_examination)
+    # Update queue status to 'apotek' after examination (goes to pharmacy)
+    queue_entry.status = "apotek"
+    session.add(queue_entry)
+    # Also update patient status to 'apotek'
+    patient = session.exec(select(Patient).where(Patient.id == queue_entry.patient_id)).first()
+    if patient:
+        patient.status = "apotek"
+        session.add(patient)
+    session.commit()
+    session.refresh(new_examination)
+    session.refresh(queue_entry)
     return new_examination

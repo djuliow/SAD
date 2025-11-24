@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, patients, queue, doctors, drugs, payments, reports, schedules, prescriptions, employees, bills, admin
+from routers import auth, patients, queue, doctors, drugs, payments, reports, schedules, prescriptions, employees, bills, admin, apotek
+from database import create_db_and_tables # Import the function
 
 app = FastAPI(title="Klinik Sentosa API", version="1.0")
+
+# Call this function to create database tables
+create_db_and_tables()
 
 origins = [
     "http://localhost",
@@ -30,6 +34,7 @@ app.include_router(schedules.router)
 app.include_router(prescriptions.router)
 app.include_router(employees.router)
 app.include_router(bills.router)
+app.include_router(apotek.router)
 
 @app.get("/")
 def root():

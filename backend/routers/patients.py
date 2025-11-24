@@ -1,11 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
+from sqlmodel import Session, select, func
+from database import get_session
 from models.patient import Patient, PatientCreate
 from models.queue import QueueEntry
-from utils.json_db import read_db, write_db
+from models.report import Examination, Prescription # Examination and Prescription are in report.py
+from models.drug import Drug
+from models.payment import Payment
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
@@ -38,49 +42,55 @@ class PatientHistory(BaseModel):
 # -----------------------------------------
 
 @router.get("/", response_model=List[Patient])
-def get_patients():
-    db = read_db()
-    return db.get("patients", [])
+def get_patients(session: Session = Depends(get_session)):
+    patients = session.exec(select(Patient)).all()
+    return patients
 
 @router.get("/{patient_id}/history", response_model=PatientHistory)
-def get_patient_history(patient_id: int):
-    db = read_db()
-    
-    # Fetch all data tables
-    patients = db.get("patients", [])
-    examinations = db.get("examinations", [])
-    prescriptions = db.get("prescriptions", [])
-    drugs = db.get("drugs", [])
-    payments = db.get("payments", [])
-    
-    # Find the patient
-    patient_info = next((p for p in patients if p["id"] == patient_id), None)
+def get_patient_history(patient_id: int, session: Session = Depends(get_session)):
+    patient_info = session.exec(select(Patient).where(Patient.id == patient_id)).first()
     if not patient_info:
         raise HTTPException(status_code=404, detail="Patient not found")
 
     # Aggregate Examinations and their Prescriptions
-    patient_examinations = [e for e in examinations if e["patient_id"] == patient_id]
+    patient_examinations = session.exec(
+        select(Examination).where(Examination.patient_id == patient_id).order_by(Examination.date.desc())
+    ).all()
     examinations_with_details = []
 
-    for exam in sorted(patient_examinations, key=lambda e: e['date'], reverse=True):
-        exam_prescriptions = [p for p in prescriptions if p["examination_id"] == exam["id"]]
+    for exam in patient_examinations:
+        exam_prescriptions = session.exec(
+            select(Prescription).where(Prescription.examination_id == exam.id)
+        ).all()
         prescriptions_details = []
         for pres in exam_prescriptions:
-            drug_info = next((d for d in drugs if d["id"] == pres["drug_id"]), None)
+            drug_info = session.exec(select(Drug).where(Drug.id == pres.drug_id)).first()
             prescriptions_details.append(PrescriptionDetail(
-                drug_name=drug_info["nama"] if drug_info else "Unknown Drug",
-                quantity=pres["quantity"],
-                notes=pres["notes"],
+                drug_name=drug_info.nama if drug_info else "Unknown Drug",
+                quantity=pres.quantity,
+                notes=pres.notes,
             ))
         
         examinations_with_details.append(ExaminationWithDetails(
-            **exam,
+            id=exam.id,
+            doctor_id=exam.doctor_id,
+            complaint=exam.complaint,
+            diagnosis=exam.diagnosis,
+            notes=exam.notes,
+            date=exam.date.isoformat(), # Convert datetime to string for response model
             prescriptions=prescriptions_details
         ))
 
     # Aggregate Payments
-    patient_payments = [p for p in payments if p["patient_id"] == patient_id]
-    payments_details = [PaymentDetail(**p) for p in sorted(patient_payments, key=lambda p: p['payment_date'], reverse=True)]
+    patient_payments = session.exec(
+        select(Payment).where(Payment.patient_id == patient_id).order_by(Payment.payment_date.desc())
+    ).all()
+    payments_details = [PaymentDetail(
+        id=p.id,
+        total_amount=p.total_amount,
+        payment_date=p.payment_date.isoformat(), # Convert datetime to string
+        method=p.method
+    ) for p in patient_payments]
 
     return PatientHistory(
         patient_info=patient_info,
@@ -88,57 +98,46 @@ def get_patient_history(patient_id: int):
         payments=payments_details
     )
 
-
 @router.post("/", response_model=Patient)
-def register_patient(patient_create: PatientCreate):
-    db = read_db()
-    patients = db.get("patients", [])
-    queue = db.get("queue", [])
-
+def register_patient(patient_create: PatientCreate, session: Session = Depends(get_session)):
     # --- Auto-generate Medical Record Number ---
-    if not patients:
-        next_mrn_number = 1
+    # Find the highest existing MRN number
+    last_patient = session.exec(select(Patient).order_by(Patient.id.desc())).first()
+    if last_patient and last_patient.medicalRecordNo:
+        try:
+            highest_mrn = int(last_patient.medicalRecordNo[2:])
+        except (ValueError, TypeError):
+            highest_mrn = 0 # Fallback if malformed
     else:
-        # Find the highest existing MRN
         highest_mrn = 0
-        for p in patients:
-            try:
-                # Expects format like "RM001"
-                num_part = int(p.get("medicalRecordNo", "RM000")[2:])
-                if num_part > highest_mrn:
-                    highest_mrn = num_part
-            except (ValueError, TypeError):
-                # Handle cases where MRN is malformed or not a string
-                continue
-        next_mrn_number = highest_mrn + 1
     
+    next_mrn_number = highest_mrn + 1
     new_medical_record_no = f"RM{next_mrn_number:03d}"
     # -----------------------------------------
 
-    next_patient_id = max([p.get("id", 0) for p in patients]) + 1 if patients else 101
-    
-    # Create a new patient dictionary from the payload, excluding the (now ignored) medicalRecordNo
-    patient_data = patient_create.dict(exclude={"medicalRecordNo"})
-
+    # Create new Patient
     new_patient = Patient(
-        id=next_patient_id, 
-        status="menunggu",
         medicalRecordNo=new_medical_record_no, 
-        **patient_data
+        status="menunggu",
+        name=patient_create.name,
+        dob=patient_create.dob,
+        gender=patient_create.gender,
+        phone=patient_create.phone,
+        address=patient_create.address
     )
-    patients.append(new_patient.dict())
+    session.add(new_patient)
+    session.commit()
+    session.refresh(new_patient) # To get the auto-generated ID
 
-    next_queue_id = max([q.get("id", 0) for q in queue]) + 1 if queue else 1
+    # Create new QueueEntry
     new_queue_entry = QueueEntry(
-        id=next_queue_id, 
         patient_id=new_patient.id, 
         patient_name=new_patient.name, 
         medicalRecordNo=new_medical_record_no,
         status="menunggu"
     )
-    queue.append(new_queue_entry.dict())
-
-    db["patients"] = patients
-    db["queue"] = queue
-    write_db(db)
+    session.add(new_queue_entry)
+    session.commit()
+    session.refresh(new_queue_entry) # To get the auto-generated ID
+    
     return new_patient

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
+import { Badge } from "/src/components/ui/badge";
 import { getDoctorDashboardSummary } from "/src/api/api.js";
 import { useAuthStore } from "/src/store/useAuthStore";
 import { toast } from "sonner";
@@ -37,10 +38,21 @@ export default function DokterDashboardPage() {
     return <p>Gagal memuat data dashboard.</p>;
   }
 
-  const { waiting_count, in_progress_count, latest_examination } = summary;
+  const { waiting_count, in_progress_count, pharmacy_count, payment_pending_count, latest_examination } = summary;
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
+      case 'diperiksa': return <Badge variant="info">Diperiksa</Badge>;
+      case 'apotek': return <Badge variant="default">Apotek</Badge>;
+      case 'membayar': return <Badge variant="secondary">Membayar</Badge>;
+      case 'selesai': return <Badge variant="success">Selesai</Badge>;
+      default: return <Badge>{status}</Badge>;
+    }
+  };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
       {/* Waiting Patients Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -52,7 +64,7 @@ export default function DokterDashboardPage() {
           <p className="text-xs text-muted-foreground">pasien di ruang tunggu</p>
         </CardContent>
       </Card>
-      
+
       {/* In Progress Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -65,8 +77,32 @@ export default function DokterDashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Pharmacy Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Di Apotek</CardTitle>
+          <Watch className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{pharmacy_count}</div>
+          <p className="text-xs text-muted-foreground">pasien di apotek</p>
+        </CardContent>
+      </Card>
+
+      {/* Payment Pending Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Menunggu Pembayaran</CardTitle>
+          <Watch className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{payment_pending_count}</div>
+          <p className="text-xs text-muted-foreground">pasien menunggu pembayaran</p>
+        </CardContent>
+      </Card>
+
       {/* Latest Examination Card */}
-      <Card className="lg:col-span-3">
+      <Card className="lg:col-span-5">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5"/>
@@ -76,7 +112,10 @@ export default function DokterDashboardPage() {
         <CardContent>
           {latest_examination ? (
             <div className="space-y-2">
-              <p className="text-sm text-slate-500">{format(new Date(latest_examination.date), "eeee, dd MMMM yyyy", { locale: id })}</p>
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-slate-500">{format(new Date(latest_examination.date), "eeee, dd MMMM yyyy", { locale: id })}</p>
+                <div className="ml-2">{getStatusBadge(latest_examination.patient_status || 'diperiksa')}</div>
+              </div>
               <h3 className="text-xl font-bold text-navy">{latest_examination.patient_name}</h3>
               <p className="text-md text-slate-700">
                 <span className="font-semibold">Diagnosis:</span> {latest_examination.diagnosis}

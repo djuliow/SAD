@@ -14,7 +14,7 @@ export async function getAdminDashboardSummary() {
 }
 
 export async function listPatients() {
-  const response = await apiRequest('/patients');
+  const response = await apiRequest('/patients/');
   return response;
 }
 
@@ -24,7 +24,7 @@ export async function getPatientHistory(patientId) {
 }
 
 export async function registerPatient(payload) {
-  const response = await apiRequest('/patients', {
+  const response = await apiRequest('/patients/', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -92,7 +92,7 @@ export async function createPrescription(examId, payload) {
     examination_id: examId,
     ...payload
   };
-  const response = await apiRequest('/prescriptions', {
+  const response = await apiRequest('/prescriptions/', {
     method: 'POST',
     body: JSON.stringify(requestBody),
   });
@@ -100,7 +100,7 @@ export async function createPrescription(examId, payload) {
 }
 
 export async function listPrescriptions(status) {
-  let endpoint = '/prescriptions';
+  let endpoint = '/prescriptions/';
   if (status) {
     endpoint += `?status=${status}`;
   }
@@ -116,7 +116,7 @@ export async function fulfillPrescription(prescriptionId) {
 }
 
 export async function createDrug(payload) {
-  const response = await apiRequest('/drugs', {
+  const response = await apiRequest('/drugs/', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -124,7 +124,7 @@ export async function createDrug(payload) {
 }
 
 export async function listMedicines() {
-  const response = await apiRequest('/drugs');
+  const response = await apiRequest('/drugs/');
   return response;
 }
 
@@ -136,8 +136,8 @@ export async function updateStock(medicineId, amount) {
   return response;
 }
 
-export async function listPayments(date) {
-  let endpoint = '/payments';
+export async function listPaymentsByDate(date) {
+  let endpoint = '/payments/';
   if (date) {
     endpoint += `?date=${date}`;
   }
@@ -151,28 +151,58 @@ export async function listPendingBills() {
 }
 
 export async function createPayment(payload) {
-  const response = await apiRequest('/payments', {
+  const response = await apiRequest('/payments/', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
   return response;
 }
 
+export async function listAllPayments() {
+  const response = await apiRequest('/payments/');
+  return response;
+}
+
 export async function listReports() {
-  const response = await apiRequest('/reports');
+  const response = await apiRequest('/reports/');
   return response;
 }
 
 export async function generateReport(type, period) {
-  const response = await apiRequest('/reports', {
+  const response = await apiRequest('/reports/', {
     method: 'POST',
     body: JSON.stringify({ type, period }),
   });
   return response;
 }
 
+export async function getPendingPatientsForApotek() {
+  const response = await apiRequest('/apotek/pending-patients');
+  return response;
+}
+
+export async function getApotekQueue() {
+  const response = await apiRequest('/apotek/queue');
+  return response;
+}
+
+export async function setApotekStatus(queueId) {
+  const response = await apiRequest(`/apotek/${queueId}/set-apotek-status`, {
+    method: 'PATCH',
+  });
+  return response;
+}
+
+export async function fulfillAllPrescriptions(examinationId) {
+  const response = await apiRequest(`/prescriptions/fulfill-all/${examinationId}`, {
+    method: 'PATCH',
+  });
+  return response;
+}
+
+
 export async function listSchedules(role) {
-  let endpoint = '/schedules';
+  let endpoint = '/schedules/';
   if (role) {
     endpoint += `?role=${role}`;
   }
@@ -182,7 +212,7 @@ export async function listSchedules(role) {
 
 export async function upsertSchedule(payload) {
 
-  const response = await apiRequest('/schedules', {
+  const response = await apiRequest('/schedules/', {
 
     method: 'POST',
 
@@ -198,8 +228,14 @@ export async function upsertSchedule(payload) {
 
 export async function listEmployees() {
 
-  const response = await apiRequest('/employees');
+
+
+  const response = await apiRequest('/employees/');
+
+
 
   return response;
+
+
 
 }

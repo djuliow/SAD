@@ -1,8 +1,10 @@
+from typing import Optional
+from sqlmodel import SQLModel, Field
 from pydantic import BaseModel
 
-class Drug(BaseModel):
-    id: int
-    nama: str
+class Drug(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nama: str = Field(index=True)
     stok: int
     harga: int
 

@@ -1,39 +1,38 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from models.drug import Drug, DrugCreate, DrugUpdateStock
-from utils.json_db import read_db, write_db
+from sqlmodel import Session, select
+from database import get_session
+from models.drug import Drug, DrugCreate, DrugUpdateStock # Drug is now SQLModel
 
 router = APIRouter(prefix="/drugs", tags=["Drugs"])
 
 @router.post("/", response_model=Drug)
-def create_drug(drug_create: DrugCreate):
-    db = read_db()
-    drugs = db.get("drugs", [])
-
-    next_id = max([d.get("id", 0) for d in drugs]) + 1 if drugs else 1
-    new_drug = Drug(id=next_id, **drug_create.dict())
+def create_drug(drug_create: DrugCreate, session: Session = Depends(get_session)):
+    new_drug = Drug.from_orm(drug_create) # Create Drug instance from DrugCreate Pydantic model
     
-    drugs.append(new_drug.dict())
-    db["drugs"] = drugs
-    write_db(db)
+    session.add(new_drug)
+    session.commit()
+    session.refresh(new_drug)
     
     return new_drug
 
 @router.get("/", response_model=List[Drug])
-def get_drugs():
-    db = read_db()
-    return db.get("drugs", [])
+def get_drugs(session: Session = Depends(get_session)):
+    drugs = session.exec(select(Drug)).all()
+    return drugs
 
 @router.patch("/{drug_id}/stock", response_model=Drug)
-def update_drug_stock(drug_id: int, drug_update: DrugUpdateStock):
-    db = read_db()
-    drugs = db.get("drugs", [])
-    for i, drug in enumerate(drugs):
-        if drug["id"] == drug_id:
-            drugs[i]["stok"] += drug_update.change_amount
-            if drugs[i]["stok"] < 0:
-                drugs[i]["stok"] = 0 # Prevent negative stock
-            db["drugs"] = drugs
-            write_db(db)
-            return drugs[i]
-    raise HTTPException(status_code=404, detail="Drug not found")
+def update_drug_stock(drug_id: int, drug_update: DrugUpdateStock, session: Session = Depends(get_session)):
+    drug = session.exec(select(Drug).where(Drug.id == drug_id)).first()
+    if not drug:
+        raise HTTPException(status_code=404, detail="Drug not found")
+    
+    drug.stok += drug_update.change_amount
+    if drug.stok < 0:
+        drug.stok = 0 # Prevent negative stock
+    
+    session.add(drug)
+    session.commit()
+    session.refresh(drug)
+    
+    return drug

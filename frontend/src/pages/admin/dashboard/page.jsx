@@ -36,6 +36,17 @@ export default function AdminDashboardPage() {
 
   const { total_patients_all_time, patients_today_count, active_queue_count, income_today, recent_queues } = summary;
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
+      case 'diperiksa': return <Badge variant="info">Diperiksa</Badge>;
+      case 'apotek': return <Badge variant="default">Apotek</Badge>;
+      case 'membayar': return <Badge variant="secondary">Membayar</Badge>;
+      case 'selesai': return <Badge variant="success">Selesai</Badge>;
+      default: return <Badge>{status}</Badge>;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -94,7 +105,7 @@ export default function AdminDashboardPage() {
                   {queue.patient_name}
                   <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
                 </p>
-                <Badge variant={queue.status === 'selesai' ? 'success' : 'default'} className="capitalize">{queue.status}</Badge>
+                {getStatusBadge(queue.status)}
               </div>
             ))
           ) : (

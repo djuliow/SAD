@@ -1,60 +1,67 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Depends
 from typing import List
 from datetime import datetime
-from models.report import Report, ReportSummary
-from utils.json_db import read_db, write_db
+from sqlmodel import Session, select, func # Import func for aggregation
+from database import get_session
+from models.report import Report, ReportSummary, Examination, Prescription # Report, Examination, Prescription are now SQLModels
+from models.payment import Payment # Payment is now SQLModel
+from models.drug import Drug # Drug is now SQLModel
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
 @router.post("/", response_model=Report)
-def generate_and_store_report(payload: dict = Body(...)):
+def generate_and_store_report(payload: dict = Body(...), session: Session = Depends(get_session)):
     report_type = payload.get("type")
     period = payload.get("period")
 
     if not report_type or not period:
         raise HTTPException(status_code=400, detail="Report type and period are required")
 
-    db = read_db()
-    all_payments = db.get("payments", [])
-    examinations = db.get("examinations", [])
-    prescriptions = db.get("prescriptions", [])
-    drugs = db.get("drugs", [])
-
+    # Base query for payments
+    payments_query = select(Payment)
+    
     # Filter payments based on period
-    filtered_payments = []
     try:
         if report_type == "DAILY":
             filter_date = datetime.strptime(period, "%Y-%m-%d").date()
-            filtered_payments = [p for p in all_payments if datetime.fromisoformat(p["payment_date"]).date() == filter_date]
+            payments_query = payments_query.where(func.date(Payment.payment_date) == filter_date.isoformat())
         elif report_type == "MONTHLY":
+            # For monthly, compare YYYY-MM
             filter_month = datetime.strptime(period, "%Y-%m").strftime("%Y-%m")
-            filtered_payments = [p for p in all_payments if datetime.fromisoformat(p["payment_date"]).strftime("%Y-%m") == filter_month]
+            payments_query = payments_query.where(func.strftime('%Y-%m', Payment.payment_date) == filter_month)
         else:
             raise HTTPException(status_code=400, detail="Invalid report type. Use DAILY or MONTHLY.")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD for DAILY or YYYY-MM for MONTHLY.")
 
-    # --- Corrected Calculation Logic ---
+    filtered_payments = session.exec(payments_query).all()
+
+    # --- Calculation Logic using SQLModel ---
 
     # 1. Total income from filtered payments
-    total_income = sum(p.get("total_amount", 0) for p in filtered_payments)
+    total_income = sum(p.total_amount for p in filtered_payments)
 
-    paid_examination_ids = {p["examination_id"] for p in filtered_payments}
+    paid_examination_ids = {p.examination_id for p in filtered_payments}
 
     # 2. Total unique patients from paid examinations in the period
-    paid_patient_ids = {e["patient_id"] for e in examinations if e["id"] in paid_examination_ids}
-    total_patients = len(paid_patient_ids)
+    # Need to query examinations that were paid for in this period
+    paid_patients_count = session.exec(
+        select(func.count(func.distinct(Examination.patient_id)))
+        .where(Examination.id.in_(list(paid_examination_ids)))
+    ).first()
+    total_patients = paid_patients_count if paid_patients_count else 0
+
 
     # 3. Drugs used from prescriptions linked to paid examinations in the period
     drugs_used = {}
-    prescriptions_in_period = [p for p in prescriptions if p["examination_id"] in paid_examination_ids]
+    prescriptions_in_period = session.exec(
+        select(Prescription, Drug)
+        .join(Drug)
+        .where(Prescription.examination_id.in_(list(paid_examination_ids)))
+    ).all()
     
-    for p in prescriptions_in_period:
-        drug_id = p.get("drug_id")
-        quantity = p.get("quantity")
-        if not drug_id or not quantity: continue
-        drug_name = next((d.get("nama") for d in drugs if d.get("id") == drug_id), f"Unknown Drug ID: {drug_id}")
-        drugs_used[drug_name] = drugs_used.get(drug_name, 0) + quantity
+    for pres, drug in prescriptions_in_period:
+        drugs_used[drug.nama] = drugs_used.get(drug.nama, 0) + pres.quantity
 
     report_summary = ReportSummary(
         total_patients=total_patients,
@@ -63,24 +70,20 @@ def generate_and_store_report(payload: dict = Body(...)):
     )
 
     # Storing logic
-    reports = db.get("reports", [])
-    next_id = max([r.get("id", 0) for r in reports]) + 1 if reports else 1
     new_report = Report(
-        id=next_id,
-        generated_at=datetime.now().isoformat(),
+        generated_at=datetime.now(),
         type=report_type,
         period=period,
-        summary=report_summary
+        summary=report_summary.json() # Serialize ReportSummary to JSON string
     )
     
-    reports.append(new_report.dict())
-    db["reports"] = reports
-    write_db(db)
+    session.add(new_report)
+    session.commit()
+    session.refresh(new_report)
     
     return new_report
 
 @router.get("/", response_model=List[Report])
-def get_all_reports():
-    db = read_db()
-    # Sort by generated_at date, newest first
-    return sorted(db.get("reports", []), key=lambda r: r.get("generated_at"), reverse=True)
+def get_all_reports(session: Session = Depends(get_session)):
+    reports = session.exec(select(Report).order_by(Report.generated_at.desc())).all()
+    return reports

@@ -10,8 +10,10 @@ import { RefreshCw, Trash2 } from "lucide-react";
 // Define a sort order for statuses
 const statusOrder = {
   "diperiksa": 1,
-  "menunggu": 2,
-  "selesai": 3,
+  "apotek": 2,
+  "membayar": 3,
+  "menunggu": 4,
+  "selesai": 5,
 };
 
 export default function AdminQueuePage() {
@@ -21,19 +23,7 @@ export default function AdminQueuePage() {
   const fetchQueues = useCallback(async () => {
     try {
       const data = await listQueues();
-      // Sort data: by status order, then by creation time
-      const sortedData = data.sort((a, b) => {
-        const orderA = statusOrder[a.status] ?? 99;
-        const orderB = statusOrder[b.status] ?? 99;
-        if (orderA !== orderB) {
-          return orderA - orderB;
-        }
-        // Fallback to id if created_at is missing, which is a valid proxy for creation order
-        const timeA = a.created_at ? new Date(a.created_at).getTime() : a.id;
-        const timeB = b.created_at ? new Date(b.created_at).getTime() : b.id;
-        return timeA - timeB; // Sort ascending (oldest first)
-      });
-      setQueues(sortedData);
+      setQueues(data);
     } catch (error) {
       toast.error(error.message ?? "Gagal memuat data antrean");
     }
@@ -58,13 +48,15 @@ export default function AdminQueuePage() {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
-      case 'diperiksa': return <Badge variant="info">Diperiksa</Badge>;
-      case 'selesai': return <Badge variant="success">Selesai</Badge>;
-      default: return <Badge>{status}</Badge>;
-    }
+  switch (status) {
+    case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
+    case 'diperiksa': return <Badge variant="info">Diperiksa</Badge>;
+    case 'apotek': return <Badge variant="default">Apotek</Badge>;
+    case 'membayar': return <Badge variant="secondary">Membayar</Badge>;
+    case 'selesai': return <Badge variant="success">Selesai</Badge>;
+    default: return <Badge>{status}</Badge>;
   }
+}
 
   return (
     <Card className="bg-white border border-navy/10 shadow-md">

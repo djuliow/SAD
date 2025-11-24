@@ -1,54 +1,50 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict
+from sqlmodel import Session, select
+from database import get_session
+from models.schedule import ScheduleEntry, ScheduleCreate # ScheduleEntry is now SQLModel
 
 router = APIRouter(prefix="/schedules", tags=["Schedules"])
 
-class ScheduleEntry(BaseModel):
-    id: int
-    user_id: int
-    user_name: str
-    day: str
-    time: str
-    activity: str
-
-class ScheduleCreate(BaseModel):
-    user_id: int
-    user_name: str
-    day: str
-    time: str
-    activity: str
-
-# Dummy storage for schedules
-_schedules: List[ScheduleEntry] = []
-_next_schedule_id = 1
-
 @router.get("/", response_model=List[ScheduleEntry])
-def get_schedules():
-    return _schedules
+def get_schedules(session: Session = Depends(get_session)):
+    schedules = session.exec(select(ScheduleEntry)).all()
+    return schedules
 
 @router.post("/", response_model=ScheduleEntry)
-def create_schedule(schedule: ScheduleCreate):
-    global _next_schedule_id
-    new_schedule = ScheduleEntry(id=_next_schedule_id, **schedule.dict())
-    _schedules.append(new_schedule)
-    _next_schedule_id += 1
+def create_schedule(schedule: ScheduleCreate, session: Session = Depends(get_session)):
+    new_schedule = ScheduleEntry.from_orm(schedule)
+    
+    session.add(new_schedule)
+    session.commit()
+    session.refresh(new_schedule)
+    
     return new_schedule
 
 @router.put("/{schedule_id}", response_model=ScheduleEntry)
-def update_schedule(schedule_id: int, schedule_update: ScheduleCreate):
-    for i, schedule in enumerate(_schedules):
-        if schedule.id == schedule_id:
-            updated_schedule = ScheduleEntry(id=schedule_id, **schedule_update.dict())
-            _schedules[i] = updated_schedule
-            return updated_schedule
-    raise HTTPException(status_code=404, detail="Schedule entry not found")
+def update_schedule(schedule_id: int, schedule_update: ScheduleCreate, session: Session = Depends(get_session)):
+    schedule = session.exec(select(ScheduleEntry).where(ScheduleEntry.id == schedule_id)).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule entry not found")
+    
+    schedule.user_id = schedule_update.user_id
+    schedule.user_name = schedule_update.user_name
+    schedule.day = schedule_update.day
+    schedule.time = schedule_update.time
+    schedule.activity = schedule_update.activity
+    
+    session.add(schedule)
+    session.commit()
+    session.refresh(schedule)
+    
+    return schedule
 
 @router.delete("/{schedule_id}", status_code=204)
-def delete_schedule(schedule_id: int):
-    global _schedules
-    initial_len = len(_schedules)
-    _schedules = [s for s in _schedules if s.id != schedule_id]
-    if len(_schedules) == initial_len:
+def delete_schedule(schedule_id: int, session: Session = Depends(get_session)):
+    schedule = session.exec(select(ScheduleEntry).where(ScheduleEntry.id == schedule_id)).first()
+    if not schedule:
         raise HTTPException(status_code=404, detail="Schedule entry not found")
-    return {"message": "Schedule deleted successfully"}
+        
+    session.delete(schedule)
+    session.commit()
+    return

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 import { Button } from "/src/components/ui/button";
+import { Badge } from "/src/components/ui/badge";
 import { listQueues, advanceQueue } from "/src/api/api.js";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
@@ -42,9 +43,20 @@ export default function DokterQueuePage() {
     });
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
+      case 'diperiksa': return <Badge variant="info">Diperiksa</Badge>;
+      case 'apotek': return <Badge variant="default">Apotek</Badge>;
+      case 'membayar': return <Badge variant="secondary">Membayar</Badge>;
+      case 'selesai': return <Badge variant="success">Selesai</Badge>;
+      default: return <Badge>{status}</Badge>;
+    }
+  }
+
   useEffect(() => {
     fetchQueues();
-  }, []);
+  }, [fetchQueues]);
 
   return (
     <Card className="bg-white border border-navy/10 shadow-md">
@@ -72,7 +84,7 @@ export default function DokterQueuePage() {
                       <span className="text-sm text-slate-500 font-normal mr-1">({queue.medicalRecordNo})</span>
                       {queue.patient_name}
                     </TableCell>
-                    <TableCell className="text-navy py-4 capitalize">{queue.status}</TableCell>
+                    <TableCell className="py-4">{getStatusBadge(queue.status)}</TableCell>
                     <TableCell className="text-right py-4 pr-6">
                       <Button
                         size="sm"

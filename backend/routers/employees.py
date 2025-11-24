@@ -1,11 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from typing import List
-from models.employee import Employee
-from utils.json_db import read_db
+from sqlmodel import Session, select
+from database import get_session
+from models.employee import Employee # Employee is now SQLModel
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
 @router.get("/", response_model=List[Employee])
-def get_employees():
-    db = read_db()
-    return db.get("employees", [])
+def get_employees(session: Session = Depends(get_session)):
+    employees = session.exec(select(Employee)).all()
+    return employees

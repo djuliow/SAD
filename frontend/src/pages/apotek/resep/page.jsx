@@ -1,23 +1,29 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { listPrescriptions, listMedicines, fulfillPrescription } from "/src/api/api.js";
+import { listPrescriptions, listMedicines, fulfillPrescription, fulfillAllPrescriptions, getPendingPatientsForApotek, getApotekQueue } from "/src/api/api.js";
 import { PrescriptionTable } from "/src/components/tables/prescription-table";
 import { toast } from "sonner";
 
 export default function ApotekPrescriptionPage() {
   const [prescriptions, setPrescriptions] = useState([]);
   const [medicines, setMedicines] = useState([]);
+  const [apotekQueue, setApotekQueue] = useState([]); // Patients at pharmacy
   const [loading, setLoading] = useState(false);
+  const [patientsWithPendingPrescriptions, setPatientsWithPendingPrescriptions] = useState([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [prescriptionsData, medicinesData] = await Promise.all([
+      const [prescriptionsData, medicinesData, patientsData, queueData] = await Promise.all([
         listPrescriptions("menunggu"), // Fetch only pending prescriptions
         listMedicines(),
+        getPendingPatientsForApotek(), // Fetch patients with pending prescriptions
+        getApotekQueue() // Fetch patients currently at pharmacy
       ]);
       setPrescriptions(prescriptionsData);
       setMedicines(medicinesData);
+      setPatientsWithPendingPrescriptions(patientsData);
+      setApotekQueue(queueData);
     } catch (error) {
       toast.error(error.message ?? "Gagal memuat data");
     } finally {
@@ -39,12 +45,52 @@ export default function ApotekPrescriptionPage() {
     }
   };
 
+  const handleFulfillAll = async (examinationId) => {
+    try {
+      await fulfillAllPrescriptions(examinationId);
+      toast.success("Semua resep berhasil diserahkan");
+      fetchData(); // Refetch data after fulfilling
+    } catch (error) {
+      toast.error(error.message ?? "Gagal menyerahkan semua resep");
+    }
+  };
+
   return (
-    <PrescriptionTable
-      prescriptions={prescriptions}
-      medicines={medicines}
-      onFulfill={handleFulfill}
-      disabled={loading}
-    />
+    <div className="space-y-6">
+      {/* Apotek Queue Card */}
+      <div className="bg-white border border-navy/10 shadow-md rounded-lg p-4">
+        <h2 className="text-lg font-bold text-navy mb-3">Antrian Apotek</h2>
+        {apotekQueue.length > 0 ? (
+          <div className="space-y-2">
+            {apotekQueue.map((queue) => (
+              <div key={queue.id} className="flex justify-between items-center p-3 bg-sky-blue/30 rounded border border-navy/10">
+                <div>
+                  <p className="font-medium">{queue.patient_name}</p>
+                  <p className="text-sm text-slate-600">MRN: {queue.medicalRecordNo}</p>
+                </div>
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                  Apotek
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-slate-500 text-center py-4">Tidak ada pasien di apotek saat ini</p>
+        )}
+      </div>
+
+      {/* Prescription Table */}
+      <div>
+        <h2 className="text-lg font-bold text-navy mb-3">Resep Masuk</h2>
+        <PrescriptionTable
+          prescriptions={prescriptions}
+          medicines={medicines}
+          onFulfill={handleFulfill}
+          onFulfillAll={handleFulfillAll}
+          disabled={loading}
+          patients={patientsWithPendingPrescriptions}
+        />
+      </div>
+    </div>
   );
 }

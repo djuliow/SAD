@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, date
 
-from utils.json_db import read_db
+from sqlmodel import Session, select, func # Import func for aggregation
+from sqlalchemy import text
+from database import get_session
+from models.patient import Patient
+from models.queue import QueueEntry
+from models.payment import Payment
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -24,77 +29,44 @@ class AdminDashboardSummary(BaseModel):
 # --------------------------
 
 @router.get("/dashboard-summary", response_model=AdminDashboardSummary)
-def get_admin_dashboard_summary():
-    db = read_db()
-    patients = db.get("patients", [])
-    queues = db.get("queue", [])
-    payments = db.get("payments", [])
-    
+def get_admin_dashboard_summary(session: Session = Depends(get_session)):
     today = date.today()
 
     # --- Calculations ---
     
     # 1. Patient Counts
-    total_patients_all_time = len(patients)
-    
-    patients_today_count = 0
-    for q in queues:
-        try:
-            queue_date = datetime.fromisoformat(q["created_at"]).date()
-            if queue_date == today:
-                patients_today_count += 1
-        except (ValueError, TypeError, KeyError):
-            # Ignore entries with malformed or missing created_at
-            continue
+    total_patients_all_time = session.exec(select(func.count(Patient.id))).one()
+
+    patients_today_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(func.date(QueueEntry.created_at) == today.isoformat())
+    ).one()
 
     # 2. Active Queue Count
-    active_queue_count = len([q for q in queues if q.get("status") != "selesai"])
+    active_queue_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status != "selesai")
+    ).one()
 
     # 3. Income Today
-    income_today = 0
-    for p in payments:
-        try:
-            payment_date = datetime.fromisoformat(p["payment_date"]).date()
-            if payment_date == today:
-                income_today += p.get("total_amount", 0)
-        except (ValueError, TypeError):
-            continue
-            
-    # 4. Recent Queues
-    # Helper to extract number from MRN, e.g., "RM001" -> 1
-    patient_map = {p["id"]: p for p in patients}
+    income_today_result = session.exec(
+        select(func.sum(Payment.total_amount)).where(func.date(Payment.payment_date) == today.isoformat())
+    ).first()
+    income_today = float(income_today_result) if income_today_result else 0.0
 
-    def get_mrn_number(q):
-        mrn = q.get("medicalRecordNo")
-        if not mrn:
-            # Try to find in patient map
-            patient = patient_map.get(q["patient_id"])
-            if patient:
-                mrn = patient.get("medicalRecordNo")
-        
-        if not mrn:
-            return 0
+    # 4. Recent Queues (Last 5, ordered by creation date, then by patient_id implicitly for stability)
+    # We need to fetch Patient medicalRecordNo for the queue entries
+    recent_queues_db = session.exec(
+        select(QueueEntry, Patient)
+        .join(Patient, QueueEntry.patient_id == Patient.id)
+        .order_by(QueueEntry.id.desc()) # Order by most recent queues (ID desc)
+    ).fetchmany(5)
 
-        try:
-            return int(mrn[2:])
-        except (ValueError, TypeError):
-            return 0
-
-    sorted_queues = sorted(queues, key=get_mrn_number)
-    recent_queues_data = sorted_queues[:5]
     recent_queues = []
-    for q in recent_queues_data:
-        mrn = q.get("medicalRecordNo")
-        if not mrn:
-             patient = patient_map.get(q["patient_id"])
-             if patient:
-                 mrn = patient.get("medicalRecordNo")
-        
+    for queue_entry, patient in recent_queues_db:
         recent_queues.append(RecentQueue(
-            id=q["id"],
-            patient_name=q["patient_name"],
-            medicalRecordNo=mrn or "RM000", 
-            status=q["status"]
+            id=queue_entry.id,
+            patient_name=queue_entry.patient_name,
+            medicalRecordNo=patient.medicalRecordNo, # Get medicalRecordNo from the joined Patient
+            status=queue_entry.status
         ))
     
     return AdminDashboardSummary(

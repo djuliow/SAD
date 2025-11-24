@@ -1,5 +1,5 @@
 import { useEffect, useState, useTransition, useCallback } from "react";
-import { listPendingBills, listPayments } from "/src/api/api.js";
+import { listPendingBills, listAllPayments } from "/src/api/api.js";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
 import { Button } from "/src/components/ui/button";
 import { PendingBillCard } from "/src/components/cards/PendingBillCard";
@@ -18,7 +18,7 @@ export default function AdminPaymentPage() {
     try {
       const [pendingData, paidData] = await Promise.all([
         listPendingBills(),
-        listPayments(),
+        listAllPayments(),
       ]);
       setPendingBills(pendingData);
       // Sort paid bills, newest first
