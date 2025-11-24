@@ -66,7 +66,7 @@
       "gender": "P",
       "phone": "08999999999",
       "address": "Manado",
-      "status": "menunggu"
+      "status": "selesai"
     },
     {
       "id": 103,
@@ -75,6 +75,26 @@
       "dob": "2010-10-31",
       "gender": "L",
       "phone": "089232323232",
+      "address": "Tomohon",
+      "status": "menunggu"
+    },
+    {
+      "id": 104,
+      "medicalRecordNo": "RM004",
+      "name": "Alo Ungke",
+      "dob": "2000-02-12",
+      "gender": "L",
+      "phone": "088888888888",
+      "address": "Tondano",
+      "status": "menunggu"
+    },
+    {
+      "id": 105,
+      "medicalRecordNo": "RM005",
+      "name": "Harjo Jono",
+      "dob": "1980-10-03",
+      "gender": "L",
+      "phone": "082121212121",
       "address": "Tomohon",
       "status": "menunggu"
     }
@@ -90,6 +110,17 @@
       "payment_date": "2025-11-24T20:01:04.082654",
       "method": "Tunai",
       "status": "LUNAS"
+    },
+    {
+      "id": 2,
+      "patient_id": 102,
+      "examination_id": 2,
+      "drug_cost": 10000,
+      "examination_fee": 50000,
+      "total_amount": 60000,
+      "payment_date": "2025-11-24T21:54:32.836588",
+      "method": "Tunai",
+      "status": "LUNAS"
     }
   ],
   "queue": [
@@ -103,13 +134,28 @@
       "id": 2,
       "patient_id": 102,
       "patient_name": "Mariana Laran",
-      "status": "menunggu"
+      "status": "selesai"
     },
     {
       "id": 3,
       "patient_id": 103,
       "patient_name": "Diego Forlan",
       "status": "menunggu"
+    },
+    {
+      "id": 4,
+      "patient_id": 104,
+      "patient_name": "Alo Ungke",
+      "medicalRecordNo": "RM004",
+      "status": "menunggu"
+    },
+    {
+      "id": 5,
+      "patient_id": 105,
+      "patient_name": "Harjo Jono",
+      "medicalRecordNo": "RM005",
+      "status": "menunggu",
+      "created_at": "2025-11-24T22:27:07.659975"
     }
   ],
   "drugs": [
@@ -118,6 +164,12 @@
       "nama": "Paracetamol",
       "stok": 97,
       "harga": 10000
+    },
+    {
+      "id": 2,
+      "nama": "Promag",
+      "stok": 98,
+      "harga": 5000
     }
   ],
   "examinations": [
@@ -129,6 +181,15 @@
       "diagnosis": "Demam berdarah",
       "notes": "Perbanyak minum air putih",
       "date": "2025-11-24T19:59:42.739686"
+    },
+    {
+      "id": 2,
+      "patient_id": 102,
+      "doctor_id": 2,
+      "complaint": "Pusing, Sakit Perut",
+      "diagnosis": "Asam Lambung",
+      "notes": "Makan makanan yang bergizi dan tepat waktu",
+      "date": "2025-11-24T21:51:50.893316"
     }
   ],
   "prescriptions": [
@@ -139,6 +200,15 @@
       "quantity": 3,
       "notes": "Sesuai anjuran dokter",
       "status": "selesai"
+    },
+    {
+      "id": 2,
+      "examination_id": 2,
+      "drug_id": 2,
+      "quantity": 2,
+      "notes": "Sesuai anjuran dokter",
+      "status": "selesai"
     }
-  ]
+  ],
+  "reports": []
 }

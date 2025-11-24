@@ -12,7 +12,7 @@ class Patient(BaseModel):
     status: str  # menunggu, diperiksa, selesai
 
 class PatientCreate(BaseModel):
-    medicalRecordNo: str
+    medicalRecordNo: Optional[str] = None
     name: str
     dob: str
     gender: str

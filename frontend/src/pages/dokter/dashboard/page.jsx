@@ -1,77 +1,89 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
-import { listQueues, listExaminations, listPatients } from "/src/api/api.js";
-import { Badge } from "/src/components/ui/badge";
+import { getDoctorDashboardSummary } from "/src/api/api.js";
+import { useAuthStore } from "/src/store/useAuthStore";
 import { toast } from "sonner";
+import { Users, Watch, FileText } from "lucide-react";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 export default function DokterDashboardPage() {
-  const [myQueue, setMyQueue] = useState([]);
-  const [latestExam, setLatestExam] = useState(null);
-  const [patients, setPatients] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!user?.id) return;
+    setIsLoading(true);
     try {
-      const [queueData, examData, patientData] = await Promise.all([
-        listQueues(),
-        listExaminations(),
-        listPatients(),
-      ]);
-
-      setPatients(patientData);
-      setMyQueue(queueData.filter((q) => q.status === "diperiksa"));
-
-      if (examData && examData.length > 0) {
-        setLatestExam(examData[examData.length - 1]);
-      }
+      const data = await getDoctorDashboardSummary(user.id);
+      setSummary(data);
     } catch (error) {
       toast.error(error.message ?? "Gagal memuat data dashboard");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const getPatientName = (patientId) => {
-    const patient = patients.find((p) => p.id === patientId);
-    return patient ? patient.name : "N/A";
-  };
+  if (isLoading) {
+    return <p>Memuat data dashboard...</p>;
+  }
+
+  if (!summary) {
+    return <p>Gagal memuat data dashboard.</p>;
+  }
+
+  const { waiting_count, in_progress_count, latest_examination } = summary;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Waiting Patients Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Antrean Dokter</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {myQueue.length > 0 ? (
-            myQueue.map((queue) => (
-              <div key={queue.id} className="flex items-center justify-between rounded-xl bg-sky-blue/50 border border-navy/10 px-4 py-3 hover:bg-sky-blue/70 hover:shadow-md transition-all">
-                <div>
-                  <p className="text-sm font-bold text-navy">{queue.patient_name}</p>
-                </div>
-                <Badge variant="default" className="capitalize">{queue.status}</Badge>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-navy/70">Tidak ada pasien dalam antrean.</p>
-          )}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Pemeriksaan Terakhir</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pasien Menunggu</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          {latestExam ? (
-            <>
-              <p className="text-sm text-navy/70 font-medium">Pasien</p>
-              <p className="text-base text-navy mt-1">{getPatientName(latestExam.patient_id)}</p>
-              <p className="mt-4 text-sm text-navy/70 font-medium">Diagnosis</p>
-              <p className="text-base text-navy mt-1">{latestExam.diagnosis}</p>
-            </>
+          <div className="text-2xl font-bold">{waiting_count}</div>
+          <p className="text-xs text-muted-foreground">pasien di ruang tunggu</p>
+        </CardContent>
+      </Card>
+      
+      {/* In Progress Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pemeriksaan Berlangsung</CardTitle>
+          <Watch className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{in_progress_count}</div>
+          <p className="text-xs text-muted-foreground">pasien sedang diperiksa</p>
+        </CardContent>
+      </Card>
+
+      {/* Latest Examination Card */}
+      <Card className="lg:col-span-3">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="h-5 w-5"/>
+            Pemeriksaan Terakhir Anda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {latest_examination ? (
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">{format(new Date(latest_examination.date), "eeee, dd MMMM yyyy", { locale: id })}</p>
+              <h3 className="text-xl font-bold text-navy">{latest_examination.patient_name}</h3>
+              <p className="text-md text-slate-700">
+                <span className="font-semibold">Diagnosis:</span> {latest_examination.diagnosis}
+              </p>
+            </div>
           ) : (
-            <p className="text-sm text-navy/70">Belum ada data pemeriksaan.</p>
+            <p className="text-sm text-slate-500 text-center py-8">Belum ada riwayat pemeriksaan.</p>
           )}
         </CardContent>
       </Card>

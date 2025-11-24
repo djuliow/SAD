@@ -68,7 +68,10 @@ export default function DokterQueuePage() {
               {queues.length > 0 ? (
                 queues.map((queue) => (
                   <TableRow key={queue.id} className="bg-white hover:bg-sky-blue/30 transition-colors border-b border-navy/5">
-                    <TableCell className="font-medium text-navy pl-6 py-4">{queue.patient_name}</TableCell>
+                    <TableCell className="font-medium text-navy pl-6 py-4">
+                      <span className="text-sm text-slate-500 font-normal mr-1">({queue.medicalRecordNo})</span>
+                      {queue.patient_name}
+                    </TableCell>
                     <TableCell className="text-navy py-4 capitalize">{queue.status}</TableCell>
                     <TableCell className="text-right py-4 pr-6">
                       <Button

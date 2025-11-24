@@ -1,95 +1,104 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "/src/components/ui/card";
 import { Badge } from "/src/components/ui/badge";
-import { listPatients, listQueues, listPayments } from "/src/api/api.js";
+import { getAdminDashboardSummary } from "/src/api/api.js";
 import { formatCurrency } from "/src/lib/utils";
 import { toast } from "sonner";
-
-function getTodayDateString() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+import { Users, List, CircleDollarSign, UserPlus } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({
-    totalPatients: 0,
-    activeQueue: 0,
-    incomeToday: 0,
-  });
-  const [recentQueues, setRecentQueues] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getAdminDashboardSummary();
+      setSummary(data);
+    } catch (error) {
+      toast.error(error.message ?? "Gagal memuat data dashboard");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const today = getTodayDateString();
-        const [patientsData, queuesData, paymentsTodayData] = await Promise.all([
-          listPatients(),
-          listQueues(),
-          listPayments(today),
-        ]);
-
-        const activeQueueCount = queuesData.filter(q => q.status !== "selesai").length;
-        const totalIncome = paymentsTodayData.reduce((sum, pay) => sum + pay.total_amount, 0);
-
-        setStats({
-          totalPatients: patientsData.length,
-          activeQueue: activeQueueCount,
-          incomeToday: totalIncome,
-        });
-
-        setRecentQueues(queuesData.slice(0, 5));
-
-      } catch (error) {
-        toast.error(error.message ?? "Gagal memuat data dashboard");
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
+
+  if (isLoading) {
+    return <div className="text-center p-8">Memuat data dashboard...</div>
+  }
+  
+  if (!summary) {
+    return <div className="text-center p-8">Gagal memuat data. Coba lagi nanti.</div>
+  }
+
+  const { total_patients_all_time, patients_today_count, active_queue_count, income_today, recent_queues } = summary;
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-beige border border-teal shadow-md border-l-4">
-          <CardHeader>
-            <CardDescription className="text-navy/70 font-medium">Pasien Terdaftar</CardDescription>
-            <CardTitle className="text-3xl font-bold text-navy mt-2">{stats.totalPatients}</CardTitle>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Pasien</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{total_patients_all_time}</div>
+            <p className="text-xs text-muted-foreground">pasien terdaftar</p>
+          </CardContent>
         </Card>
-        <Card className="bg-beige border border-teal shadow-md border-l-4">
-          <CardHeader>
-            <CardDescription className="text-navy/70 font-medium">Antrean Aktif</CardDescription>
-            <CardTitle className="text-3xl font-bold text-navy mt-2">{stats.activeQueue}</CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pasien Hari Ini</CardTitle>
+            <UserPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{patients_today_count}</div>
+            <p className="text-xs text-muted-foreground">pasien baru hari ini</p>
+          </CardContent>
         </Card>
-        <Card className="bg-beige border border-teal shadow-md border-l-4">
-          <CardHeader>
-            <CardDescription className="text-navy/70 font-medium">Pemasukan Hari Ini</CardDescription>
-            <CardTitle className="text-3xl font-bold text-navy mt-2">{formatCurrency(stats.incomeToday)}</CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Antrean Aktif</CardTitle>
+            <List className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{active_queue_count}</div>
+            <p className="text-xs text-muted-foreground">pasien sedang menunggu/diperiksa</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pemasukan Hari Ini</CardTitle>
+            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(income_today)}</div>
+            <p className="text-xs text-muted-foreground">dari semua pembayaran</p>
+          </CardContent>
         </Card>
       </div>
-      <Card className="bg-white border border-navy/10 shadow-md">
-        <CardHeader className="bg-beige border-b border-navy/10">
-          <CardTitle className="text-lg font-bold text-navy">Antrean Terkini</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Antrean Terkini</CardTitle>
         </CardHeader>
-        <CardContent className="p-6 pt-8">
-        <div className="rounded-md border border-navy/10 p-4 space-y-3">
-          {recentQueues.length > 0 ? (
-            recentQueues.map((queue) => (
-              <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 border border-navy/10 px-4 py-3 hover:bg-sky-blue/30 transition-all">
-                <div>
-                  <p className="text-sm font-bold text-navy">Antrean #{queue.id}</p>
-                  <p className="text-xs text-navy/70">Pasien: {queue.patient_name}</p>
-                </div>
-                <Badge variant={queue.status === "menunggu" ? "warning" : "success"} className="capitalize">{queue.status}</Badge>
+        <CardContent>
+        <div className="space-y-3">
+          {recent_queues.length > 0 ? (
+            recent_queues.map((queue, index) => (
+              <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 px-4 py-3">
+                <p className="text-sm font-bold text-navy">
+                  <span className="text-xs text-slate-500 font-normal mr-1">{index + 1}.</span>
+                  {queue.patient_name}
+                  <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
+                </p>
+                <Badge variant={queue.status === 'selesai' ? 'success' : 'default'} className="capitalize">{queue.status}</Badge>
               </div>
             ))
           ) : (
-            <p className="text-sm text-center text-navy/70">Tidak ada antrean saat ini.</p>
+            <p className="text-sm text-center text-navy/70 py-4">Tidak ada antrean saat ini.</p>
           )}
         </div>
         </CardContent>

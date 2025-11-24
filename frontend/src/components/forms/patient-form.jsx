@@ -11,12 +11,11 @@ import { Textarea } from "/src/components/ui/textarea";
 import { toast } from "sonner";
 
 const schema = z.object({
-  medicalRecordNo: z.string().min(3),
-  name: z.string().min(3),
-  dob: z.string(),
+  name: z.string().min(3, "Nama wajib diisi"),
+  dob: z.string().min(1, "Tanggal lahir wajib diisi"),
   gender: z.enum(["L", "P"]),
-  phone: z.string().min(8),
-  address: z.string().min(5)
+  phone: z.string().min(8, "No. telepon minimal 8 digit"),
+  address: z.string().min(5, "Alamat wajib diisi")
 });
 
 export function PatientForm({ onSuccess }) {
@@ -28,7 +27,11 @@ export function PatientForm({ onSuccess }) {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      gender: "L"
+      gender: "L",
+      name: "",
+      dob: "",
+      phone: "",
+      address: "",
     }
   });
   const [pending, startTransition] = useTransition();
@@ -51,14 +54,7 @@ export function PatientForm({ onSuccess }) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <Label>No. Rekam Medis</Label>
-          <Input placeholder="RM001" {...register("medicalRecordNo")} />
-          {errors.medicalRecordNo && (
-            <p className="text-xs text-red-500">{errors.medicalRecordNo.message}</p>
-          )}
-        </div>
-        <div>
+        <div className="md:col-span-2">
           <Label>Nama Lengkap</Label>
           <Input placeholder="Nama pasien" {...register("name")} />
           {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
@@ -66,6 +62,7 @@ export function PatientForm({ onSuccess }) {
         <div>
           <Label>Tanggal Lahir</Label>
           <Input type="date" {...register("dob")} />
+          {errors.dob && <p className="text-xs text-red-500">{errors.dob.message}</p>}
         </div>
         <div>
           <Label>Jenis Kelamin</Label>
@@ -77,13 +74,15 @@ export function PatientForm({ onSuccess }) {
             <option value="P">Perempuan</option>
           </select>
         </div>
-        <div>
+        <div className="md:col-span-2">
           <Label>No. Telepon</Label>
           <Input placeholder="08xxxxxxxx" {...register("phone")} />
+          {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
         </div>
-        <div>
+        <div className="md:col-span-2">
           <Label>Alamat</Label>
           <Textarea rows={3} {...register("address")} />
+          {errors.address && <p className="text-xs text-red-500">{errors.address.message}</p>}
         </div>
       </div>
       <Button className="w-full" disabled={pending} type="submit">

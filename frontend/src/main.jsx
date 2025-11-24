@@ -5,6 +5,7 @@ import App from './App';
 import LoginPage from './pages/login/page';
 import AdminDashboardPage from './pages/admin/dashboard/page';
 import AdminRegistrationPage from './pages/admin/pendaftaran/page';
+import AdminMedicalRecordPage from './pages/admin/rekam-medis/page';
 import AdminQueuePage from './pages/admin/antrian/page';
 import AdminPaymentPage from './pages/admin/pembayaran/page';
 import AdminReportPage from './pages/admin/laporan/page';
@@ -30,6 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />}>
           <Route path="admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="admin/pendaftaran" element={<AdminRegistrationPage />} />
+          <Route path="admin/rekam-medis" element={<AdminMedicalRecordPage />} />
           <Route path="admin/antrian" element={<AdminQueuePage />} />
           <Route path="admin/pembayaran" element={<AdminPaymentPage />} />
           <Route path="admin/laporan" element={<AdminReportPage />} />

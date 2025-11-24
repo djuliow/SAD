@@ -8,8 +8,18 @@ export async function authenticate(username, password, role) {
   return response;
 }
 
+export async function getAdminDashboardSummary() {
+  const response = await apiRequest('/admin/dashboard-summary');
+  return response;
+}
+
 export async function listPatients() {
   const response = await apiRequest('/patients');
+  return response;
+}
+
+export async function getPatientHistory(patientId) {
+  const response = await apiRequest(`/patients/${patientId}/history`);
   return response;
 }
 
@@ -22,7 +32,7 @@ export async function registerPatient(payload) {
 }
 
 export async function listQueues(status) {
-  let endpoint = '/queue';
+  let endpoint = '/queue/';
   if (status) {
     endpoint += `?status=${status}`;
   }
@@ -38,8 +48,20 @@ export async function advanceQueue(queueId, nextStatus) {
   return response;
 }
 
+export async function cancelQueue(queueId) {
+  const response = await apiRequest(`/queue/${queueId}`, {
+    method: 'DELETE',
+  });
+  return response;
+}
+
 export async function getQueueDetails(queueId) {
   const response = await apiRequest(`/queue/${queueId}/details`);
+  return response;
+}
+
+export async function getDoctorDashboardSummary(doctorId) {
+  const response = await apiRequest(`/doctors/dashboard-summary?doctor_id=${doctorId}`);
   return response;
 }
 

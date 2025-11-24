@@ -1,24 +1,25 @@
 
 export const NAVIGATION = {
-  ADMIN: [
+  admin: [
     { label: "Dashboard", href: "/admin/dashboard", icon: "activity" },
     { label: "Pendaftaran", href: "/admin/pendaftaran", icon: "users" },
+    { label: "Rekam Medis", href: "/admin/rekam-medis", icon: "history" },
     { label: "Antrean", href: "/admin/antrian", icon: "list" },
     { label: "Pembayaran", href: "/admin/pembayaran", icon: "credit-card" },
     { label: "Laporan", href: "/admin/laporan", icon: "chart" },
     { label: "Jadwal", href: "/admin/jadwal", icon: "calendar" }
   ],
-  DOKTER: [
+  dokter: [
     { label: "Dashboard", href: "/dokter/dashboard", icon: "stethoscope" },
     { label: "Antrean", href: "/dokter/antrian", icon: "list" },
-    { label: "Riwayat", href: "/dokter/riwayat", icon: "history" }
+    { label: "Rekam Medis", href: "/dokter/riwayat", icon: "history" }
   ],
-  APOTEKER: [
+  apoteker: [
     { label: "Dashboard", href: "/apotek/dashboard", icon: "activity" },
     { label: "Resep", href: "/apotek/resep", icon: "pill" },
     { label: "Stok", href: "/apotek/stok", icon: "package" }
   ],
-  KEPALA: [
+  kepala: [
     { label: "Laporan", href: "/kepala/laporan", icon: "chart" },
     { label: "Jadwal", href: "/kepala/jadwal", icon: "calendar" }
   ]

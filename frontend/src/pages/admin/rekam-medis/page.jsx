@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/car
 import { Input } from "/src/components/ui/input";
 import { toast } from "sonner";
 
-export default function DokterHistoryPage() {
+export default function AdminMedicalRecordPage() {
   const [patients, setPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");

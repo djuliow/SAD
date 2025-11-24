@@ -72,7 +72,7 @@ export function AppShell({ children }) {
     return null;
   }
 
-  const menu = NAVIGATION[user.role] || [];
+  const menu = NAVIGATION[user.role?.toLowerCase()] || [];
 
   return (
     <div className="flex min-h-screen bg-sky-blue">
@@ -107,7 +107,7 @@ export function AppShell({ children }) {
             <div className="px-3 py-2.5 text-sm text-white/60">No menu items available</div>
           )}
         </nav>
-        <ActiveQueueInfo /> 
+        <ActiveQueueInfo />
       </aside>
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-navy/10 bg-navy px-6 py-4 shadow-md">
