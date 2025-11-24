@@ -34,42 +34,54 @@ def generate_and_store_report(payload: dict = Body(...), session: Session = Depe
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD for DAILY or YYYY-MM for MONTHLY.")
 
-    filtered_payments = session.exec(payments_query).all()
-
-    # --- Calculation Logic using SQLModel ---
-
-    # 1. Total income from filtered payments
-    total_income = sum(p.total_amount for p in filtered_payments)
-
-    paid_examination_ids = {p.examination_id for p in filtered_payments}
-
-    # 2. Total unique patients from paid examinations in the period
-    # Need to query examinations that were paid for in this period
-    total_patients = 0
-    drugs_used = {}
+    # Check if manual summary is provided
+    manual_summary = payload.get("manual_summary")
     
-    if paid_examination_ids:
-        paid_patients_count = session.exec(
-            select(func.count(func.distinct(Examination.patient_id)))
-            .where(Examination.id.in_(list(paid_examination_ids)))
-        ).first()
-        total_patients = paid_patients_count if paid_patients_count else 0
+    if manual_summary:
+        report_summary = ReportSummary(
+            total_patients=manual_summary.get("total_patients", 0),
+            total_income=manual_summary.get("total_income", 0),
+            total_expenses=manual_summary.get("total_expenses", 0),
+            notes=manual_summary.get("notes", ""),
+            drugs_used=manual_summary.get("drugs_used", {})
+        )
+    else:
+        filtered_payments = session.exec(payments_query).all()
 
-        # 3. Drugs used from prescriptions linked to paid examinations in the period
-        prescriptions_in_period = session.exec(
-            select(Prescription, Drug)
-            .join(Drug)
-            .where(Prescription.examination_id.in_(list(paid_examination_ids)))
-        ).all()
+        # --- Calculation Logic using SQLModel ---
+
+        # 1. Total income from filtered payments
+        total_income = sum(p.total_amount for p in filtered_payments)
+
+        paid_examination_ids = {p.examination_id for p in filtered_payments}
+
+        # 2. Total unique patients from paid examinations in the period
+        # Need to query examinations that were paid for in this period
+        total_patients = 0
+        drugs_used = {}
         
-        for pres, drug in prescriptions_in_period:
-            drugs_used[drug.nama] = drugs_used.get(drug.nama, 0) + pres.quantity
+        if paid_examination_ids:
+            paid_patients_count = session.exec(
+                select(func.count(func.distinct(Examination.patient_id)))
+                .where(Examination.id.in_(list(paid_examination_ids)))
+            ).first()
+            total_patients = paid_patients_count if paid_patients_count else 0
 
-    report_summary = ReportSummary(
-        total_patients=total_patients,
-        total_income=total_income,
-        drugs_used=drugs_used
-    )
+            # 3. Drugs used from prescriptions linked to paid examinations in the period
+            prescriptions_in_period = session.exec(
+                select(Prescription, Drug)
+                .join(Drug)
+                .where(Prescription.examination_id.in_(list(paid_examination_ids)))
+            ).all()
+            
+            for pres, drug in prescriptions_in_period:
+                drugs_used[drug.nama] = drugs_used.get(drug.nama, 0) + pres.quantity
+
+        report_summary = ReportSummary(
+            total_patients=total_patients,
+            total_income=total_income,
+            drugs_used=drugs_used
+        )
 
     # Storing logic
     new_report = Report(

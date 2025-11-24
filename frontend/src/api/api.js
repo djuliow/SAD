@@ -168,10 +168,14 @@ export async function listReports() {
   return response;
 }
 
-export async function generateReport(type, period) {
+export async function generateReport(type, period, manual_summary = null) {
+  const payload = { type, period };
+  if (manual_summary) {
+    payload.manual_summary = manual_summary;
+  }
   const response = await apiRequest('/reports/', {
     method: 'POST',
-    body: JSON.stringify({ type, period }),
+    body: JSON.stringify(payload),
   });
   return response;
 }

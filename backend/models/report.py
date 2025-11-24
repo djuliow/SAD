@@ -7,6 +7,8 @@ import json # Import json for serialization of ReportSummary
 class ReportSummary(BaseModel):
     total_patients: int
     total_income: int
+    total_expenses: Optional[int] = 0
+    notes: Optional[str] = ""
     drugs_used: dict # {drug_name: quantity_used}
 
 class Report(SQLModel, table=True):

@@ -19,14 +19,14 @@ const schema = z.object({
 const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const shifts = ["Pagi", "Siang", "Sore"];
 
-export function ScheduleForm() {
+export function ScheduleForm({ onSuccess }) {
   const {
     handleSubmit,
     setValue,
     watch
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { userId: users[0].id, role: users[0].role, day: days[0], shift: shifts[0] }
+    defaultValues: { userId: users[0]?.id || "", role: users[0]?.role || "DOKTER", day: days[0], shift: shifts[0] }
   });
   const [pending, startTransition] = useTransition();
 
@@ -35,6 +35,7 @@ export function ScheduleForm() {
       try {
         await upsertSchedule(values);
         toast.success("Jadwal tersimpan");
+        if (onSuccess) onSuccess();
       } catch (error) {
         toast.error(error.message ?? "Gagal menyimpan jadwal");
       }

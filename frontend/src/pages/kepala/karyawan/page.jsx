@@ -7,7 +7,7 @@ import { Button } from "/src/components/ui/button";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Input } from "/src/components/ui/input";
 import { Label } from "/src/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
+import { Select, SelectItem } from "/src/components/ui/select";
 
 export default function KepalaKaryawanPage() {
     const [employees, setEmployees] = useState([]);
@@ -157,17 +157,16 @@ export default function KepalaKaryawanPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="role">Role</Label>
-                                <select
+                                <Select
                                     id="role"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    onValueChange={(value) => setFormData({ ...formData, role: value })}
                                 >
-                                    <option value="admin">Admin</option>
-                                    <option value="dokter">Dokter</option>
-                                    <option value="apoteker">Apoteker</option>
-                                    <option value="kepala">Kepala</option>
-                                </select>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                    <SelectItem value="dokter">Dokter</SelectItem>
+                                    <SelectItem value="apoteker">Apoteker</SelectItem>
+                                    <SelectItem value="kepala">Kepala</SelectItem>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="username">Username</Label>

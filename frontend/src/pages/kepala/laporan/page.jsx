@@ -1,109 +1,207 @@
-import { useState, useEffect, useCallback, useTransition } from "react";
-import { listReports, generateReport } from "/src/api/api.js";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card";
-import { ReportViewer } from "/src/components/cards/report-viewer";
 import { Button } from "/src/components/ui/button";
+import { listReports, generateReport } from "/src/api/api.js";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 import { Input } from "/src/components/ui/input";
 import { Label } from "/src/components/ui/label";
-import { toast } from "sonner";
-import { RefreshCw, FilePlus } from "lucide-react";
-import { format } from "date-fns";
+import { Select, SelectItem } from "/src/components/ui/select";
+import { X, Plus, FileText } from "lucide-react";
 
 export default function KepalaReportPage() {
   const [reports, setReports] = useState([]);
-  const [isFetching, setIsFetching] = useState(true);
-  const [isGenerating, startGenerating] = useTransition();
-
-  // Form state
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportType, setReportType] = useState("DAILY");
-  const [period, setPeriod] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [period, setPeriod] = useState("");
+  const [manualData, setManualData] = useState({
+    total_income: 0,
+    total_expenses: 0,
+    total_patients: 0,
+    notes: ""
+  });
 
-  const fetchReports = useCallback(async () => {
-    setIsFetching(true);
+  const fetchReports = async () => {
     try {
       const data = await listReports();
       setReports(data);
     } catch (error) {
-      toast.error(error.message ?? "Gagal memuat laporan");
+      toast.error("Gagal memuat laporan");
     } finally {
-      setIsFetching(false);
+      setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchReports();
-  }, [fetchReports]);
+  }, []);
 
-  const handleGenerateReport = (e) => {
-    e.preventDefault();
-    startGenerating(async () => {
-      try {
-        await generateReport(reportType, period);
-        toast.success(`Laporan ${reportType.toLowerCase()} untuk periode ${period} berhasil dibuat.`);
-        fetchReports(); // Refresh the list
-      } catch (error) {
-        toast.error(error.message ?? "Gagal membuat laporan");
-      }
-    });
-  };
-  
-  const handleTypeChange = (e) => {
-    const newType = e.target.value;
-    setReportType(newType);
-    if (newType === 'DAILY') {
-      setPeriod(format(new Date(), "yyyy-MM-dd"));
-    } else {
-      setPeriod(format(new Date(), "yyyy-MM"));
+  const handleGenerateReport = async () => {
+    if (!period) {
+      toast.error("Pilih periode laporan");
+      return;
     }
-  }
+
+    try {
+      // Construct payload for manual report
+      const payload = {
+        type: reportType,
+        period: period,
+        manual_summary: {
+          total_income: parseInt(manualData.total_income),
+          total_expenses: parseInt(manualData.total_expenses),
+          total_patients: parseInt(manualData.total_patients),
+          notes: manualData.notes
+        }
+      };
+
+      await generateReport(payload.type, payload.period, payload.manual_summary);
+      toast.success("Laporan berhasil dibuat");
+      setIsDialogOpen(false);
+      fetchReports();
+      // Reset form
+      setManualData({ total_income: 0, total_expenses: 0, total_patients: 0, notes: "" });
+      setPeriod("");
+    } catch (error) {
+      toast.error("Gagal membuat laporan");
+    }
+  };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
-      <Card className="h-fit">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2"><FilePlus className="h-5 w-5"/> Buat Laporan Baru</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleGenerateReport} className="space-y-4">
-            <div>
-              <Label>Tipe Laporan</Label>
-              <select value={reportType} onChange={handleTypeChange} className="h-10 w-full rounded-md border border-navy/20 bg-white px-3 text-sm">
-                <option value="DAILY">Harian</option>
-                <option value="MONTHLY">Bulanan</option>
-              </select>
-            </div>
-            <div>
-              <Label>Periode</Label>
-              <Input 
-                type={reportType === 'DAILY' ? 'date' : 'month'} 
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-                max={reportType === 'DAILY' ? format(new Date(), "yyyy-MM-dd") : format(new Date(), "yyyy-MM")}
-              />
-            </div>
-            <Button className="w-full bg-teal hover:bg-teal/90 text-white" disabled={isGenerating}>
-              {isGenerating ? "Membuat..." : "Buat Laporan"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Ringkasan Laporan</CardTitle>
-          <Button size="icon" variant="ghost" onClick={fetchReports} aria-label="Refresh" disabled={isFetching}>
-            <RefreshCw className={`h-5 w-5 text-navy ${isFetching ? 'animate-spin' : ''}`} />
+    <div className="space-y-6">
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-bold text-navy">Laporan Keuangan</CardTitle>
+            <p className="text-xs text-navy/70">Kelola dan lihat laporan keuangan klinik.</p>
+          </div>
+          <Button onClick={() => setIsDialogOpen(true)} className="bg-teal hover:bg-teal/90 text-white gap-2">
+            <Plus className="h-4 w-4" /> Buat Laporan Manual
           </Button>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          {isFetching ? (
-            <p className="text-sm text-center text-navy/70 py-10 md:col-span-2">Memuat laporan...</p>
-          ) : reports.length > 0 ? (
-            reports.map((report) => <ReportViewer key={report.id} report={report} />)
-          ) : (
-            <p className="text-sm text-center text-navy/70 py-10 md:col-span-2">Belum ada laporan yang dibuat.</p>
-          )}
+        <CardContent className="p-6">
+          <div className="rounded-md border border-navy/10 shadow-sm overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-beige hover:bg-beige border-b border-navy/10">
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider pl-6 py-4">Tanggal Dibuat</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Tipe</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Periode</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Total Pasien</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Pemasukan</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Pengeluaran</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Catatan</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-navy/70">Memuat data...</TableCell>
+                  </TableRow>
+                ) : reports.length > 0 ? (
+                  reports.map((report) => {
+                    const summary = JSON.parse(report.summary);
+                    return (
+                      <TableRow key={report.id} className="hover:bg-sky-blue/30 transition-colors border-b border-navy/10">
+                        <TableCell className="font-medium text-navy pl-6 py-4">{format(new Date(report.generated_at), "dd MMM yyyy HH:mm")}</TableCell>
+                        <TableCell className="text-navy py-4">{report.type}</TableCell>
+                        <TableCell className="text-navy py-4">{report.period}</TableCell>
+                        <TableCell className="text-navy py-4">{summary.total_patients}</TableCell>
+                        <TableCell className="text-navy py-4 font-semibold text-green-600">Rp {summary.total_income?.toLocaleString()}</TableCell>
+                        <TableCell className="text-navy py-4 font-semibold text-red-500">Rp {summary.total_expenses?.toLocaleString() || 0}</TableCell>
+                        <TableCell className="text-navy py-4 italic text-xs">{summary.notes || "-"}</TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-navy/70">Belum ada laporan.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Manual Report Dialog */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-navy">Input Laporan Keuangan</h2>
+              <Button variant="ghost" size="icon" onClick={() => setIsDialogOpen(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tipe Laporan</Label>
+                  <Select value={reportType} onValueChange={setReportType}>
+                    <SelectItem value="DAILY">Harian</SelectItem>
+                    <SelectItem value="MONTHLY">Bulanan</SelectItem>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Periode</Label>
+                  <Input
+                    type={reportType === "DAILY" ? "date" : "month"}
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Total Pemasukan (Rp)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={manualData.total_income}
+                  onChange={(e) => setManualData({ ...manualData, total_income: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Total Pengeluaran (Rp)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={manualData.total_expenses}
+                  onChange={(e) => setManualData({ ...manualData, total_expenses: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Total Pasien</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={manualData.total_patients}
+                  onChange={(e) => setManualData({ ...manualData, total_patients: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Catatan</Label>
+                <Input
+                  value={manualData.notes}
+                  onChange={(e) => setManualData({ ...manualData, notes: e.target.value })}
+                  placeholder="Keterangan tambahan..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleGenerateReport} className="bg-teal hover:bg-teal/90 text-white">Simpan Laporan</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
