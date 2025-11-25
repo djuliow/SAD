@@ -104,6 +104,14 @@ export async function createPrescription(examId, payload) {
   return response;
 }
 
+export async function updatePrescription(prescriptionId, payload) {
+  const response = await apiRequest(`/prescriptions/${prescriptionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+  return response;
+}
+
 export async function listPrescriptions(status) {
   let endpoint = '/prescriptions/';
   if (status) {

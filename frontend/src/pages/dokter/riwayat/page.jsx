@@ -16,10 +16,7 @@ export default function DokterHistoryPage() {
       try {
         const data = await listPatients();
         setPatients(data);
-        // Select the first patient by default if list is not empty
-        if (data.length > 0) {
-          setSelectedPatientId(data[0].id);
-        }
+        // Don't select any patient by default, let user choose
       } catch (error) {
         toast.error(error.message ?? "Gagal memuat daftar pasien");
       } finally {
@@ -37,9 +34,9 @@ export default function DokterHistoryPage() {
   }, [patients, searchTerm]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-      {/* Patient List */}
-      <Card className="bg-white border border-navy/10 shadow-md h-fit">
+    <div className="space-y-6">
+      {/* Patient List Card */}
+      <Card className="bg-white border border-navy/10 shadow-md">
         <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
           <CardTitle className="text-lg font-bold text-navy">Daftar Pasien</CardTitle>
           <Input
@@ -70,16 +67,25 @@ export default function DokterHistoryPage() {
         </CardContent>
       </Card>
 
-      {/* Patient History Viewer */}
-      <div className="h-full">
-        {selectedPatientId ? (
-          <PatientHistoryViewer patientId={selectedPatientId} />
-        ) : (
-          <div className="flex items-center justify-center h-full rounded-xl bg-white border border-navy/10 shadow-md border-dashed border-navy/20">
-            <p className="text-navy/70">Pilih pasien untuk melihat riwayatnya.</p>
+      {/* Modal for Patient History */}
+      {selectedPatientId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-4xl rounded-lg bg-white shadow-xl overflow-hidden">
+            <div className="flex justify-between items-center bg-beige border-b border-navy/10 p-4">
+              <h2 className="text-lg font-bold text-navy">Rekam Medis Pasien</h2>
+              <button
+                onClick={() => setSelectedPatientId(null)}
+                className="text-navy hover:text-white hover:bg-navy rounded-full p-1"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[70vh]">
+              <PatientHistoryViewer patientId={selectedPatientId} />
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,6 @@ export const NAVIGATION = {
   admin: [
     { label: "Dashboard", href: "/admin/dashboard", icon: "activity" },
     { label: "Pendaftaran", href: "/admin/pendaftaran", icon: "users" },
-    { label: "Rekam Medis", href: "/admin/rekam-medis", icon: "history" },
     { label: "Antrean", href: "/admin/antrian", icon: "list" },
     { label: "Pembayaran", href: "/admin/pembayaran", icon: "credit-card" },
     { label: "Laporan", href: "/admin/laporan", icon: "chart" },

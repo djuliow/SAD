@@ -9,7 +9,7 @@ import { Label } from "/src/components/ui/label";
 import { Textarea } from "/src/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, Edit3 } from "lucide-react";
 
 export default function PemeriksaanDetailPage() {
   const { id: queueId } = useParams();
@@ -34,6 +34,11 @@ export default function PemeriksaanDetailPage() {
   const [selectedMedicine, setSelectedMedicine] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState(""); // Empty default for instructions
+
+  // Edit prescription state
+  const [editingPrescriptionId, setEditingPrescriptionId] = useState(null);
+  const [editQuantity, setEditQuantity] = useState(1);
+  const [editInstructions, setEditInstructions] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,6 +100,41 @@ export default function PemeriksaanDetailPage() {
     const medicine = allMedicines.find(m => m.id === drugId);
     setPrescribedMedicines(prescribedMedicines.filter((m) => m.drug_id !== drugId));
     toast.info(`${medicine?.nama || 'Obat'} dihapus dari resep.`);
+  };
+
+  const handleEditMedicine = (drugId) => {
+    const medicine = prescribedMedicines.find(m => m.drug_id === drugId);
+    if (medicine) {
+      setEditingPrescriptionId(drugId);
+      setEditQuantity(medicine.quantity);
+      setEditInstructions(medicine.notes);
+    }
+  };
+
+  const handleSaveEdit = (drugId) => {
+    if (editQuantity <= 0) {
+      toast.warning("Jumlah harus lebih dari 0.");
+      return;
+    }
+
+    const medicineDetails = allMedicines.find((m) => m.id === parseInt(drugId));
+    if (medicineDetails && medicineDetails.stok < editQuantity) {
+      toast.error(`Stok tidak mencukupi. Tersedia: ${medicineDetails.stok}, permintaan: ${editQuantity}`);
+      return;
+    }
+
+    setPrescribedMedicines(prescribedMedicines.map(m =>
+      m.drug_id === drugId
+        ? { ...m, quantity: parseInt(editQuantity), notes: editInstructions }
+        : m
+    ));
+
+    toast.success("Resep berhasil diperbarui.");
+    setEditingPrescriptionId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPrescriptionId(null);
   };
 
   const handleFinishExamination = () => {
@@ -237,21 +277,74 @@ export default function PemeriksaanDetailPage() {
                   </TableHeader>
                   <TableBody>
                     {prescribedMedicines.map(med => (
-                      <TableRow key={med.drug_id}>
-                        <TableCell className="font-medium">{med.drug_name}</TableCell>
-                        <TableCell>{med.quantity}</TableCell>
-                        <TableCell>{med.notes}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveMedicine(med.drug_id)}
-                            title="Hapus dari resep"
-                          >
-                            <X className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      editingPrescriptionId === med.drug_id ? (
+                        // Edit mode
+                        <TableRow key={med.drug_id}>
+                          <TableCell className="font-medium">{med.drug_name}</TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={editQuantity}
+                              onChange={(e) => setEditQuantity(parseInt(e.target.value) || 0)}
+                              min="1"
+                              className="w-20"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="text"
+                              value={editInstructions}
+                              onChange={(e) => setEditInstructions(e.target.value)}
+                              placeholder="Contoh: 3x1 sebelum makan"
+                              className="w-full"
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                Batal
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveEdit(med.drug_id)}
+                              >
+                                Simpan
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        // View mode
+                        <TableRow key={med.drug_id}>
+                          <TableCell className="font-medium">{med.drug_name}</TableCell>
+                          <TableCell>{med.quantity}</TableCell>
+                          <TableCell>{med.notes}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleEditMedicine(med.drug_id)}
+                                title="Edit resep"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveMedicine(med.drug_id)}
+                                title="Hapus dari resep"
+                              >
+                                <X className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
                     ))}
                   </TableBody>
                 </Table>

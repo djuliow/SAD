@@ -105,6 +105,29 @@ def fulfill_prescription(prescription_id: int, session: Session = Depends(get_se
     return prescription_to_fulfill
 
 
+@router.patch("/{prescription_id}", response_model=Prescription)
+def update_prescription(prescription_id: int, prescription_update: PrescriptionCreate, session: Session = Depends(get_session)):
+    """Update prescription details"""
+    prescription = session.exec(select(Prescription).where(Prescription.id == prescription_id)).first()
+    if not prescription:
+        raise HTTPException(status_code=404, detail="Prescription not found")
+
+    # Only allow updating if prescription is not fulfilled yet
+    if prescription.status == "selesai":
+        raise HTTPException(status_code=400, detail="Cannot update a fulfilled prescription")
+
+    # Update prescription details
+    prescription.drug_id = prescription_update.drug_id
+    prescription.quantity = prescription_update.quantity
+    prescription.notes = prescription_update.notes
+    # We don't update status, examination_id, it should remain the same
+
+    session.add(prescription)
+    session.commit()
+    session.refresh(prescription)
+
+    return prescription
+
 @router.patch("/fulfill-all/{examination_id}", response_model=List[Prescription])
 def fulfill_all_prescriptions(examination_id: int, session: Session = Depends(get_session)):
     """Fulfill all prescriptions for a single examination at once"""
