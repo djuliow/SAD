@@ -36,6 +36,15 @@ export default function AdminDashboardPage() {
 
   const { total_patients_all_time, patients_today_count, active_queue_count, income_today, recent_queues } = summary;
 
+  // Hitung jumlah pasien untuk masing-masing status berdasarkan recent_queues jika tidak ada di queue_counts
+  const getQueueCount = (status) => {
+    if (summary.queue_counts && summary.queue_counts[status] !== undefined) {
+      return summary.queue_counts[status];
+    }
+    // Jika tidak tersedia di queue_counts, hitung dari recent_queues
+    return recent_queues.filter(queue => queue.status === status).length;
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'menunggu': return <Badge variant="warning">Menunggu</Badge>;
@@ -92,13 +101,13 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card className="bg-orange-50 border-orange-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-orange-700">Menunggu</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900">{summary.queue_counts?.menunggu || 0}</div>
+            <div className="text-2xl font-bold text-orange-900">{getQueueCount('menunggu')}</div>
           </CardContent>
         </Card>
         <Card className="bg-blue-50 border-blue-200">
@@ -106,7 +115,15 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-blue-700">Diperiksa</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{summary.queue_counts?.diperiksa || 0}</div>
+            <div className="text-2xl font-bold text-blue-900">{getQueueCount('diperiksa')}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-700">Apotek</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-900">{getQueueCount('apotek')}</div>
           </CardContent>
         </Card>
         <Card className="bg-purple-50 border-purple-200">
@@ -114,7 +131,7 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-purple-700">Membayar</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-900">{summary.queue_counts?.membayar || 0}</div>
+            <div className="text-2xl font-bold text-purple-900">{getQueueCount('membayar')}</div>
           </CardContent>
         </Card>
         <Card className="bg-green-50 border-green-200">
@@ -122,7 +139,7 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-green-700">Selesai</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-900">{summary.queue_counts?.selesai || 0}</div>
+            <div className="text-2xl font-bold text-green-900">{getQueueCount('selesai')}</div>
           </CardContent>
         </Card>
       </div>
