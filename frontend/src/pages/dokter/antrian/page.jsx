@@ -8,14 +8,18 @@ import { listQueues, advanceQueue } from "/src/api/api.js";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 
+import { useAuthStore } from "/src/store/useAuthStore";
+
 export default function DokterQueuePage() {
   const [queues, setQueues] = useState([]);
   const [isPending, startTransition] = useTransition();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
 
   const fetchQueues = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const data = await listQueues();
+      const data = await listQueues(null, user.id); // Pass doctor_id
       // Show patients who are waiting OR are currently being examined
       const doctorQueues = data.filter(
         (queue) => queue.status === "menunggu" || queue.status === "diperiksa"
@@ -24,7 +28,7 @@ export default function DokterQueuePage() {
     } catch (error) {
       toast.error(error.message ?? "Gagal memuat data antrean");
     }
-  }, []);
+  }, [user?.id]);
 
 
   const handleQueueClick = (queue) => {

@@ -27,22 +27,24 @@ class DashboardSummary(BaseModel):
 
 @router.get("/dashboard-summary", response_model=DashboardSummary)
 def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depends(get_session)):
-    # Count waiting queues
+    # Count waiting queues for this doctor
     waiting_count = session.exec(
-        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "menunggu")
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "menunggu").where(QueueEntry.doctor_id == doctor_id)
     ).one()
-    # Count in-progress queues
+    # Count in-progress queues for this doctor
     in_progress_count = session.exec(
-        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "diperiksa")
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "diperiksa").where(QueueEntry.doctor_id == doctor_id)
     ).one()
-    # Count pharmacy queues
+    # Count pharmacy queues (Global or per doctor? Let's keep it global for now as pharmacy is shared, or filter if requested. 
+    # Usually pharmacy is a separate role. But if doctor wants to track THEIR patients in pharmacy:
     pharmacy_count = session.exec(
-        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "apotek")
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "apotek").where(QueueEntry.doctor_id == doctor_id)
     ).one()
-    # Count payment pending queues
+    # Count payment pending queues for this doctor
     payment_pending_count = session.exec(
-        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "membayar")
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "membayar").where(QueueEntry.doctor_id == doctor_id)
     ).one()
+    
     # Latest examination for the doctor
     latest_exam_with_patient = session.exec(
         select(Examination, Patient)
@@ -50,6 +52,7 @@ def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depend
         .where(Examination.doctor_id == doctor_id)
         .order_by(Examination.date.desc())
     ).first()
+    
     latest_exam_summary = None
     if latest_exam_with_patient:
         latest_exam, patient = latest_exam_with_patient
@@ -59,6 +62,7 @@ def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depend
             date=latest_exam.date.isoformat(),
             patient_status=patient.status
         )
+        
     return DashboardSummary(
         waiting_count=waiting_count,
         in_progress_count=in_progress_count,

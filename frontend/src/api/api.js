@@ -31,11 +31,16 @@ export async function registerPatient(payload) {
   return response;
 }
 
-export async function listQueues(status) {
+export async function listQueues(status, doctorId) {
   let endpoint = '/queue/';
-  if (status) {
-    endpoint += `?status=${status}`;
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  if (doctorId) params.append('doctor_id', doctorId);
+
+  if (params.toString()) {
+    endpoint += `?${params.toString()}`;
   }
+
   const response = await apiRequest(endpoint);
   return response;
 }

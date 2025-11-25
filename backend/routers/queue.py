@@ -5,16 +5,21 @@ from database import get_session
 from models.queue import QueueEntry, QueueUpdateStatus
 from models.patient import Patient
 from models.report import Examination
+from models.payment import Payment
 
 router = APIRouter(prefix="/queue", tags=["Queue"])
 
 @router.get("/", response_model=List[QueueEntry])
-def get_queue(session: Session = Depends(get_session)):
-    queue_entries_with_patients = session.exec(
-        select(QueueEntry, Patient)
-        .join(Patient, QueueEntry.patient_id == Patient.id)
-        .order_by(QueueEntry.id.asc())
-    ).all()
+def get_queue(status: Optional[str] = None, doctor_id: Optional[int] = None, session: Session = Depends(get_session)):
+    query = select(QueueEntry, Patient).join(Patient, QueueEntry.patient_id == Patient.id)
+    
+    if status:
+        query = query.where(QueueEntry.status == status)
+        
+    if doctor_id:
+        query = query.where(QueueEntry.doctor_id == doctor_id)
+        
+    queue_entries_with_patients = session.exec(query.order_by(QueueEntry.id.asc())).all()
 
     # Update medicalRecordNo from Patient table to ensure it's always correct
     result = []
@@ -80,10 +85,6 @@ def cancel_queue_entry(queue_id: int, session: Session = Depends(get_session)):
 
     # Delete the queue entry
     session.delete(queue_entry)
-
-    # Check if the patient has any other queue entries or history
-    from models.report import Examination
-    from models.payment import Payment
 
     # Check for other queue entries (excluding the one being deleted)
     other_queue_entries = session.exec(

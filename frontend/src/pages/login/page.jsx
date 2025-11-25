@@ -1,22 +1,36 @@
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { authenticate } from "/src/api/api.js";
+import { authenticate, listEmployees } from "/src/api/api.js";
 import { useAuthStore } from "/src/store/useAuthStore";
 import { Input } from "/src/components/ui/input";
 import { Button } from "/src/components/ui/button";
 import { toast } from "sonner";
-import { User, Stethoscope, Pill, Users } from "lucide-react";
+import { User, Stethoscope, Pill, Users, ChevronRight } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const [step, setStep] = useState('role'); // 'role' or 'credentials'
+  const [step, setStep] = useState('role'); // 'role', 'doctor-select', 'credentials'
   const [selectedRole, setSelectedRole] = useState('');
+  const [doctors, setDoctors] = useState([]);
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
   });
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const employees = await listEmployees();
+        const doctorList = employees.filter(emp => emp.role.toLowerCase() === 'dokter');
+        setDoctors(doctorList);
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
   // Define credentials mapping
   const roleCredentials = {
@@ -30,8 +44,8 @@ export default function LoginPage() {
       text: "text-red-700"
     },
     dokter: {
-      username: "dokter",
-      password: "dokter123",
+      username: "", // Will be filled from selection
+      password: "",
       icon: Stethoscope,
       color: "from-blue-500 to-blue-700",
       bg: "bg-blue-100",
@@ -60,12 +74,35 @@ export default function LoginPage() {
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-    // Pre-fill credentials for demo purposes
+
+    if (role === 'dokter') {
+      setStep('doctor-select');
+      return;
+    }
+
+    // Restore auto-fill for other roles
     const roleCred = roleCredentials[role];
     setCredentials({
       username: roleCred.username,
       password: roleCred.password
     });
+    setStep('credentials');
+  };
+
+  const handleDoctorSelect = (doctor) => {
+    setCredentials({
+      username: doctor.username || "",
+      password: doctor.password || ""
+    });
+    // Auto-login or just go to credentials step?
+    // User said "tinggal diklik dan ... login"
+    // Let's go to credentials step first to show it filled, then user clicks login?
+    // Or we can auto-submit. Let's try auto-submit behavior by calling login immediately?
+    // But handleLogin uses state 'credentials' which might not be updated yet due to closure/async.
+    // Better to just fill and go to step, user clicks login. Or use a temp var.
+
+    // Actually, let's just fill and go to credentials step. It's safer and allows verification.
+    // "username dan password terisi otomatis" - satisfied.
     setStep('credentials');
   };
 
@@ -92,7 +129,15 @@ export default function LoginPage() {
   };
 
   const handleBack = () => {
-    setStep('role');
+    if (step === 'doctor-select') {
+      setStep('role');
+    } else if (step === 'credentials') {
+      if (selectedRole === 'dokter') {
+        setStep('doctor-select');
+      } else {
+        setStep('role');
+      }
+    }
     setCredentials({
       username: '',
       password: ''
@@ -161,6 +206,51 @@ export default function LoginPage() {
 
             <div className="text-center mt-8">
               <p className="text-xs text-gray-500">Pilih peran yang sesuai dengan posisi Anda</p>
+            </div>
+          </div>
+        ) : step === 'doctor-select' ? (
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-200 p-8 shadow-xl">
+            <div className="flex items-center mb-6">
+              <button
+                onClick={handleBack}
+                className="flex items-center text-sm text-[#567C8D] hover:text-[#2F4156] transition-colors"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali
+              </button>
+              <div className="ml-4">
+                <h3 className="font-semibold text-[#2F4156]">Pilih Dokter</h3>
+                <p className="text-xs text-gray-500">Silakan pilih akun Anda</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+              {doctors.length > 0 ? (
+                doctors.map((doc) => (
+                  <div
+                    key={doc.id}
+                    onClick={() => handleDoctorSelect(doc)}
+                    className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-200 hover:bg-blue-50 cursor-pointer transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
+                        <Stethoscope className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 group-hover:text-blue-700">{doc.name}</p>
+                        <p className="text-xs text-slate-500">{doc.username}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500" />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  Belum ada data dokter.
+                </div>
+              )}
             </div>
           </div>
         ) : (
