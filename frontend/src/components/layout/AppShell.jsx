@@ -31,7 +31,7 @@ function ActiveQueueInfo() { // role prop removed
   }, []); // Dependency array changed to empty, runs once on mount
 
   return (
-    <div className="mt-10 rounded-xl bg-navy-dark p-4 text-sm shadow-inner border border-white/5">
+    <div className="rounded-xl bg-navy-dark p-4 text-sm shadow-inner border border-white/5">
       <p className="font-bold text-white">Antrean Aktif</p>
       <p className="text-xs text-white/80 mt-1">Pasien terakhir:</p>
       <p className="text-sm font-semibold text-white mt-1 bg-white/20 px-2 py-1 rounded">
@@ -84,38 +84,42 @@ export function AppShell({ children }) {
 
   return (
     <div className="flex min-h-screen bg-sky-blue">
-      <aside className="hidden w-64 flex-shrink-0 border-r border-navy/10 bg-navy px-4 py-6 shadow-xl lg:block fixed h-full z-[90] overflow-y-auto">
-        <div className="mb-8 space-y-1 rounded-xl bg-navy-light p-5 text-white shadow-md">
-          <p className="text-xs uppercase text-white/90 font-semibold tracking-wide">SISTEM INFORMASI</p>
-          <h1 className="text-xl font-bold text-white">Klinik Sentosa</h1>
-          <p className="text-sm text-white/90 uppercase">{user.role}</p>
+      <aside className="hidden w-64 flex-shrink-0 border-r border-navy/10 bg-navy shadow-xl lg:flex lg:flex-col fixed h-full z-[90]">
+        <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
+          <div className="mb-8 space-y-1 rounded-xl bg-navy-light p-5 text-white shadow-md">
+            <p className="text-xs uppercase text-white/90 font-semibold tracking-wide">SISTEM INFORMASI</p>
+            <h1 className="text-xl font-bold text-white">Klinik Sentosa</h1>
+            <p className="text-sm text-white/90 uppercase">{user.role}</p>
+          </div>
+          <nav className="space-y-1">
+            {menu.length > 0 ? (
+              menu.map((item) => {
+                const Icon = LucideIconMap[item.icon] ?? LucideIconMap.activity;
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all",
+                      active
+                        ? "bg-teal text-white shadow-sm"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    )}
+                    to={item.href}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="px-3 py-2.5 text-sm text-white/60">No menu items available</div>
+            )}
+          </nav>
         </div>
-        <nav className="space-y-1">
-          {menu.length > 0 ? (
-            menu.map((item) => {
-              const Icon = LucideIconMap[item.icon] ?? LucideIconMap.activity;
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all",
-                    active
-                      ? "bg-teal text-white shadow-sm"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  )}
-                  to={item.href}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })
-          ) : (
-            <div className="px-3 py-2.5 text-sm text-white/60">No menu items available</div>
-          )}
-        </nav>
-        <ActiveQueueInfo />
+        <div className="p-4 bg-navy border-t border-navy-light/10">
+          <ActiveQueueInfo />
+        </div>
       </aside>
       <div className="lg:ml-64 flex flex-1 flex-col">
         <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between border-b border-navy/10 bg-navy px-6 py-4 shadow-md z-[100]">

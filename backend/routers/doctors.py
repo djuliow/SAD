@@ -21,8 +21,9 @@ class LatestExaminationSummary(BaseModel):
 class DashboardSummary(BaseModel):
     waiting_count: int
     in_progress_count: int
-    pharmacy_count: int  # New field for 'apotek' status
-    payment_pending_count: int  # New field for 'membayar' status
+    pharmacy_count: int
+    payment_pending_count: int
+    completed_count: int # New field for 'selesai' status
     latest_examination: Optional[LatestExaminationSummary] = None
 
 @router.get("/dashboard-summary", response_model=DashboardSummary)
@@ -35,14 +36,17 @@ def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depend
     in_progress_count = session.exec(
         select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "diperiksa").where(QueueEntry.doctor_id == doctor_id)
     ).one()
-    # Count pharmacy queues (Global or per doctor? Let's keep it global for now as pharmacy is shared, or filter if requested. 
-    # Usually pharmacy is a separate role. But if doctor wants to track THEIR patients in pharmacy:
+    # Count pharmacy queues
     pharmacy_count = session.exec(
         select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "apotek").where(QueueEntry.doctor_id == doctor_id)
     ).one()
     # Count payment pending queues for this doctor
     payment_pending_count = session.exec(
         select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "membayar").where(QueueEntry.doctor_id == doctor_id)
+    ).one()
+    # Count completed queues for this doctor
+    completed_count = session.exec(
+        select(func.count()).select_from(QueueEntry).where(QueueEntry.status == "selesai").where(QueueEntry.doctor_id == doctor_id)
     ).one()
     
     # Latest examination for the doctor
@@ -68,6 +72,7 @@ def get_dashboard_summary(doctor_id: int = Query(...), session: Session = Depend
         in_progress_count=in_progress_count,
         pharmacy_count=pharmacy_count,
         payment_pending_count=payment_pending_count,
+        completed_count=completed_count,
         latest_examination=latest_exam_summary
     )
 

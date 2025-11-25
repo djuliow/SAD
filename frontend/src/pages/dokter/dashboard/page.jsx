@@ -4,7 +4,7 @@ import { Badge } from "/src/components/ui/badge";
 import { getDoctorDashboardSummary } from "/src/api/api.js";
 import { useAuthStore } from "/src/store/useAuthStore";
 import { toast } from "sonner";
-import { Users, Watch, FileText } from "lucide-react";
+import { Users, Watch, FileText, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -38,7 +38,7 @@ export default function DokterDashboardPage() {
     return <p>Gagal memuat data dashboard.</p>;
   }
 
-  const { waiting_count, in_progress_count, pharmacy_count, payment_pending_count, latest_examination } = summary;
+  const { waiting_count, in_progress_count, pharmacy_count, payment_pending_count, completed_count, latest_examination } = summary;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -101,11 +101,23 @@ export default function DokterDashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Completed Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pasien Selesai</CardTitle>
+          <CheckCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{completed_count}</div>
+          <p className="text-xs text-muted-foreground">pasien selesai diperiksa</p>
+        </CardContent>
+      </Card>
+
       {/* Latest Examination Card */}
       <Card className="lg:col-span-5">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="h-5 w-5"/>
+            <FileText className="h-5 w-5" />
             Pemeriksaan Terakhir Anda
           </CardTitle>
         </CardHeader>
