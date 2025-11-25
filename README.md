@@ -31,28 +31,61 @@ Sistem Informasi Klinik Sentosa adalah aplikasi web lengkap yang dirancang untuk
 
 ## ✨ Fitur Utama
 
-### 👨‍💼 Admin
-- **Dashboard**: Ringkasan statistik klinik (pasien hari ini, total pasien, pendapatan)
-- **Pendaftaran Pasien**: Mendaftarkan pasien baru dan mengelola data pasien
-- **Antrian**: Mengelola antrian pasien dengan status real-time
-- **Jadwal Dokter**: Mengatur dan melihat jadwal praktik dokter
-- **Pembayaran**: Mengelola transaksi pembayaran pasien
-- **Laporan**: Melihat laporan keuangan dan statistik klinik
+
+
+### 👨‍💼 Admin (Administrator)
+Peran ini memiliki akses penuh untuk mengelola operasional harian klinik.
+- **Dashboard**: Menampilkan ringkasan real-time seperti jumlah pasien hari ini, total pendapatan harian, dan statistik kunjungan.
+- **Pendaftaran Pasien**:
+  - Form registrasi pasien baru dengan validasi data.
+  - Pencarian data pasien lama.
+  - Pembuatan Nomor Rekam Medis (RM) otomatis.
+- **Manajemen Antrian**:
+  - Monitoring antrian poli umum/gigi secara real-time.
+  - Fitur pemanggilan pasien.
+  - Update status antrian (Menunggu -> Diperiksa -> Apotek -> Membayar-> Selesai).
+- **Jadwal Dokter**:
+  - Pengaturan jadwal praktik dokter per hari dan jam.
+  - Visualisasi jadwal yang mudah dibaca.
+- **Pembayaran (Kasir)**:
+  - Perhitungan otomatis total biaya (Jasa Dokter + Obat).
+  - Cetak struk pembayaran.
+  - Riwayat transaksi pembayaran.
+- **Laporan Harian**: Rekapitulasi pendapatan dan kunjungan per hari.
 
 ### 👨‍⚕️ Dokter
-- **Dashboard**: Informasi pasien dan jadwal praktik
-- **Antrian**: Melihat daftar pasien yang menunggu
-- **Pemeriksaan**: Melakukan pemeriksaan, mendiagnosis, dan memberikan resep
-- **Riwayat**: Melihat riwayat pemeriksaan pasien
+Antarmuka khusus untuk tenaga medis melakukan pemeriksaan.
+- **Dashboard Dokter**: Jadwal praktik hari ini dan daftar pasien yang menunggu.
+- **Antrian Pasien**:
+  - Melihat daftar pasien dalam antrian pemeriksaan.
+  - Memulai sesi konsultasi.
+- **Pemeriksaan & Diagnosa**:
+  - Input keluhan (anamnesa) dan diagnosa.
+  - Input tindakan medis yang dilakukan.
+  - Penulisan resep obat digital yang terintegrasi dengan stok apotek.
+- **Riwayat Medis**: Akses cepat ke riwayat pemeriksaan pasien sebelumnya untuk referensi medis.
 
 ### 💊 Apoteker
-- **Dashboard**: Ringkasan resep dan stok obat
-- **Resep**: Memproses resep dari dokter
-- **Stok Obat**: Mengelola inventori obat (tambah, edit, hapus)
+Fokus pada manajemen obat dan penyerahan resep.
+- **Dashboard Apotek**: Notifikasi resep baru yang masuk dari dokter.
+- **Manajemen Resep**:
+  - Verifikasi resep dari dokter.
+  - Penyiapan obat dan update status (Disiapkan -> Selesai).
+- **Inventori Obat**:
+  - Manajemen stok obat (Masuk/Keluar).
+  - Peringatan stok menipis.
+  - Manajemen data obat (Harga, Satuan, Kategori).
+- **Laporan Apotek**: Laporan pengeluaran obat harian.
 
 ### 👔 Kepala Klinik
-- **Laporan**: Melihat laporan lengkap keuangan dan operasional
-- **Jadwal**: Melihat jadwal seluruh dokter
+Dashboard eksekutif untuk monitoring dan pengambilan keputusan.
+- **Laporan Eksekutif**:
+  - Laporan pendapatan komprehensif (Harian/Bulanan/Tahunan).
+  - Grafik tren kunjungan pasien.
+- **Manajemen SDM (Karyawan)**: Pengelolaan data dokter, perawat, dan staf admin.
+- **Analisis Kinerja**: Monitoring performa dokter dan efisiensi pelayanan.
+- **Data Pasien**: Analisis demografi dan database seluruh pasien.
+- **Monitoring Jadwal**: Melihat overview jadwal operasional klinik.
 
 ## 🛠️ Teknologi yang Digunakan
 
@@ -61,7 +94,7 @@ Sistem Informasi Klinik Sentosa adalah aplikasi web lengkap yang dirancang untuk
 - **Server**: Uvicorn
 - **Validation**: Pydantic
 - **CORS**: Middleware untuk komunikasi frontend-backend
-- **Storage**: JSON-based database (database.json)
+- **Storage**: SQLite (database/sqlite.db)
 
 ### Frontend
 - **Framework**: React 19.2.0
@@ -106,7 +139,7 @@ python -m venv .venv
 .venv\Scripts\activate
 
 # Untuk Mac/Linux:
-# source .venv/bin/activate
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -137,10 +170,10 @@ cd backend
 .venv\Scripts\activate
 
 # Mac/Linux:
-# source .venv/bin/activate
+source .venv/bin/activate
 
 # Jalankan server FastAPI
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload
 ```
 
 Server akan berjalan di: `http://localhost:8000`
@@ -169,7 +202,9 @@ Aplikasi akan berjalan di: `http://localhost:5173`
 SAD/
 ├── backend/
 │   ├── main.py                 # Entry point aplikasi FastAPI
-│   ├── database.json           # Database JSON untuk penyimpanan data
+│   ├── database.py             # Konfigurasi database
+│   ├── database/               # Direktori database
+│   │   └── sqlite.db          # File database SQLite
 │   ├── requirements.txt        # Dependencies Python
 │   ├── models/                 # Pydantic models untuk validasi data
 │   │   ├── user.py
@@ -179,13 +214,18 @@ SAD/
 │   │   └── ...
 │   ├── routers/                # API endpoints
 │   │   ├── auth.py            # Autentikasi & login
+│   │   ├── admin.py           # Dashboard admin
 │   │   ├── patients.py        # Manajemen pasien
 │   │   ├── queue.py           # Manajemen antrian
 │   │   ├── doctors.py         # Manajemen dokter
 │   │   ├── drugs.py           # Manajemen obat
+│   │   ├── prescriptions.py   # Manajemen resep
 │   │   ├── payments.py        # Manajemen pembayaran
+│   │   ├── bills.py           # Tagihan
 │   │   ├── reports.py         # Laporan
-│   │   └── schedules.py       # Jadwal dokter
+│   │   ├── schedules.py       # Jadwal dokter
+│   │   ├── employees.py       # Manajemen karyawan
+│   │   └── apotek.py          # Dashboard apotek
 │   └── utils/                  # Utility functions
 │
 ├── frontend/
@@ -195,36 +235,27 @@ SAD/
 │   │   ├── index.css          # Global styles
 │   │   ├── pages/             # Halaman aplikasi
 │   │   │   ├── admin/         # Halaman admin
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── pendaftaran/
-│   │   │   │   ├── antrian/
-│   │   │   │   ├── jadwal/
-│   │   │   │   ├── pembayaran/
-│   │   │   │   └── laporan/
 │   │   │   ├── dokter/        # Halaman dokter
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── antrian/
-│   │   │   │   ├── pemeriksaan/
-│   │   │   │   └── riwayat/
 │   │   │   ├── apotek/        # Halaman apoteker
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── resep/
-│   │   │   │   └── stok/
 │   │   │   ├── kepala/        # Halaman kepala klinik
-│   │   │   │   ├── laporan/
-│   │   │   │   └── jadwal/
 │   │   │   └── login/         # Halaman login
 │   │   ├── components/        # Reusable components
 │   │   │   ├── ui/           # UI components (buttons, cards, etc)
+│   │   │   ├── cards/        # Card components
+│   │   │   ├── forms/        # Form components
+│   │   │   ├── layout/       # Layout components
+│   │   │   ├── tables/       # Table components
+│   │   │   ├── features/     # Feature specific components
 │   │   │   └── ...
 │   │   ├── api/              # API client functions
 │   │   ├── store/            # Zustand store
 │   │   ├── lib/              # Utilities
-│   │   └── types/            # Type definitions
+│   │   └── constants/        # Constants
 │   ├── public/               # Static assets
 │   ├── package.json
 │   ├── vite.config.js
-│   └── tailwind.config.js
+│   ├── eslint.config.js
+│   └── index.html
 │
 └── README.md
 ```
@@ -236,9 +267,9 @@ Sistem menyediakan akun default untuk testing:
 | Role | Username | Password |
 |------|----------|----------|
 | Admin | `admin` | `admin123` |
-| Dokter | `dokter` | `dokter123` |
 | Apoteker | `apoteker` | `apotek123` |
 | Kepala Klinik | `kepala` | `kepala123` |
+| Dokter | _Dibuat oleh Kepala_ | _Dibuat oleh Kepala_ |
 
 ⚠️ **Penting**: Ganti password default ini sebelum menggunakan sistem di production!
 
@@ -253,32 +284,29 @@ http://localhost:8000
 
 #### Authentication
 - `POST /auth/login` - Login user
-- `GET /auth/me` - Get current user info
 
 #### Patients
 - `GET /patients` - Get all patients
-- `GET /patients/{id}` - Get patient by ID
-- `POST /patients` - Create new patient
-- `PUT /patients/{id}` - Update patient
-- `DELETE /patients/{id}` - Delete patient
+- `POST /patients` - Register new patient (and add to queue)
+- `GET /patients/{id}/history` - Get patient history
+- `GET /patients/stats` - Get patient statistics
 
 #### Queue
 - `GET /queue` - Get all queue entries
-- `GET /queue/{id}` - Get queue entry by ID
-- `POST /queue` - Add to queue
+- `GET /queue/{id}/details` - Get queue details
 - `PUT /queue/{id}` - Update queue status
+- `DELETE /queue/{id}` - Cancel/Delete queue entry
 
 #### Doctors
-- `GET /doctors` - Get all doctors
-- `GET /doctors/{id}` - Get doctor by ID
-- `POST /doctors` - Create doctor
-- `PUT /doctors/{id}` - Update doctor
+- `GET /doctors/dashboard-summary` - Get doctor dashboard summary
+- `POST /doctors/examinations` - Create examination record
+- `GET /doctors/performance` - Get doctor performance stats
 
 #### Drugs
 - `GET /drugs` - Get all drugs
-- `GET /drugs/{id}` - Get drug by ID
-- `POST /drugs` - Create drug
-- `PUT /drugs/{id}` - Update drug stock
+- `POST /drugs` - Create new drug
+- `PUT /drugs/{id}` - Update drug details
+- `PATCH /drugs/{id}/stock` - Update drug stock
 
 #### Payments
 - `GET /payments` - Get all payments
@@ -286,11 +314,29 @@ http://localhost:8000
 
 #### Reports
 - `GET /reports` - Get reports
-- `GET /reports/summary` - Get summary statistics
+- `POST /reports` - Generate report
 
 #### Schedules
 - `GET /schedules` - Get doctor schedules
 - `POST /schedules` - Create schedule
+- `PUT /schedules/{id}` - Update schedule
+- `DELETE /schedules/{id}` - Delete schedule
+
+#### Employees (Manajemen SDM)
+- `GET /employees` - Get all employees (including doctors)
+- `POST /employees` - Create employee
+- `PUT /employees/{id}` - Update employee
+- `DELETE /employees/{id}` - Delete employee
+
+#### Prescriptions
+- `GET /prescriptions` - Get all prescriptions
+- `POST /prescriptions` - Create prescription
+- `PATCH /prescriptions/{id}` - Update prescription
+- `PATCH /prescriptions/{id}/fulfill` - Fulfill prescription
+
+#### Apotek
+- `GET /apotek/queue` - Get pharmacy queue
+- `GET /apotek/pending-patients` - Get patients waiting for pharmacy
 
 Untuk dokumentasi lengkap, kunjungi `http://localhost:8000/docs` setelah menjalankan backend.
 
@@ -328,16 +374,16 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ### Backend tidak bisa diakses
 - Pastikan port 8000 tidak digunakan aplikasi lain
 - Periksa apakah semua dependencies terinstall dengan benar
-- Cek file `database.json` ada dan valid
+- Cek file `database/sqlite.db` ada
 
 ### Frontend tidak bisa connect ke Backend
 - Periksa CORS settings di `backend/main.py`
 - Pastikan backend berjalan di `http://localhost:8000`
 - Cek network tab di browser untuk detail error
 
-### Database JSON corrupt
-- Backup `database.json` terlebih dahulu
-- Reset ke struktur default jika diperlukan
+### Database Corrupt
+- Backup `database/sqlite.db` terlebih dahulu
+- Hapus file jika ingin reset database (akan dibuat ulang saat restart)
 
 ## 🤝 Kontribusi
 

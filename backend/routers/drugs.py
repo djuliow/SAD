@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from sqlmodel import Session, select
 from database import get_session
-from models.drug import Drug, DrugCreate, DrugUpdateStock # Drug is now SQLModel
+from models.drug import Drug, DrugCreate, DrugUpdateStock, DrugUpdate # Drug is now SQLModel
 
 router = APIRouter(prefix="/drugs", tags=["Drugs"])
 
@@ -30,6 +30,25 @@ def update_drug_stock(drug_id: int, drug_update: DrugUpdateStock, session: Sessi
     drug.stok += drug_update.change_amount
     if drug.stok < 0:
         drug.stok = 0 # Prevent negative stock
+    
+    session.add(drug)
+    session.commit()
+    session.refresh(drug)
+    
+    return drug
+
+@router.put("/{drug_id}", response_model=Drug)
+def update_drug(drug_id: int, drug_update: DrugUpdate, session: Session = Depends(get_session)):
+    drug = session.exec(select(Drug).where(Drug.id == drug_id)).first()
+    if not drug:
+        raise HTTPException(status_code=404, detail="Drug not found")
+    
+    if drug_update.nama is not None:
+        drug.nama = drug_update.nama
+    if drug_update.stok is not None:
+        drug.stok = drug_update.stok
+    if drug_update.harga is not None:
+        drug.harga = drug_update.harga
     
     session.add(drug)
     session.commit()

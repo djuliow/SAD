@@ -158,6 +158,14 @@ export async function updateStock(medicineId, amount) {
   return response;
 }
 
+export async function updateMedicine(id, data) {
+  const response = await apiRequest(`/drugs/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return response;
+}
+
 export async function listPaymentsByDate(date) {
   let endpoint = '/payments/';
   if (date) {

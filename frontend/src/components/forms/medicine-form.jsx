@@ -1,5 +1,5 @@
 
-import { useTransition } from "react";
+import { useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +7,7 @@ import { updateStock } from "/src/api/api.js";
 import { Button } from "/src/components/ui/button";
 import { Input } from "/src/components/ui/input";
 import { Label } from "/src/components/ui/label";
-import { Select, SelectItem } from "/src/components/ui/select";
+import { SelectInput } from "/src/components/ui/select";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -15,7 +15,7 @@ const schema = z.object({
   amount: z.number().min(-100).max(500)
 });
 
-export function MedicineForm({ medicines = [], onSuccess }) {
+export function MedicineForm({ medicines = [], selectedMedicineId, onSuccess }) {
   const {
     register,
     handleSubmit,
@@ -27,6 +27,12 @@ export function MedicineForm({ medicines = [], onSuccess }) {
     defaultValues: { medicineId: medicines[0]?.id ?? "", amount: 10 }
   });
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (selectedMedicineId) {
+      setValue("medicineId", selectedMedicineId);
+    }
+  }, [selectedMedicineId, setValue]);
 
   const onSubmit = (values) => {
     startTransition(async () => {
@@ -45,17 +51,16 @@ export function MedicineForm({ medicines = [], onSuccess }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label>Obat</Label>
-        <Select
-          defaultValue={medicines[0]?.id ?? ""}
-          onValueChange={(value) => setValue("medicineId", value)}
-          className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+        <SelectInput
+          {...register("medicineId")}
+          className="bg-white border-slate-200"
         >
           {medicines.map((med) => (
-            <SelectItem key={med.id} value={String(med.id)}>
+            <option key={med.id} value={String(med.id)}>
               {med.nama}
-            </SelectItem>
+            </option>
           ))}
-        </Select>
+        </SelectInput>
       </div>
       <div>
         <Label>Penyesuaian</Label>

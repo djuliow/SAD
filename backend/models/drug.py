@@ -15,3 +15,8 @@ class DrugCreate(BaseModel):
 
 class DrugUpdateStock(BaseModel):
     change_amount: int
+
+class DrugUpdate(BaseModel):
+    nama: Optional[str] = None
+    stok: Optional[int] = None
+    harga: Optional[int] = None

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { upsertSchedule, listEmployees } from "/src/api/api.js";
 import { Button } from "/src/components/ui/button";
 import { Label } from "/src/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
+import { SelectInput } from "/src/components/ui/select";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -15,7 +15,7 @@ const schema = z.object({
   shift: z.string()
 });
 
-const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 const shifts = ["Pagi", "Siang", "Sore"];
 
 export function ScheduleForm({ onSuccess }) {
@@ -88,61 +88,51 @@ export function ScheduleForm({ onSuccess }) {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="doctor" className="text-navy font-medium">Pilih Dokter</Label>
-          <Select 
+          <SelectInput 
+            id="doctor"
             value={selectedUserId} 
             onValueChange={(val) => setValue("userId", val)}
+            className="bg-white border-navy/20"
           >
-            <SelectTrigger id="doctor" className="w-full bg-white border-navy/20">
-              <SelectValue placeholder="Pilih Dokter">
-                {getSelectedDoctorName()}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {doctors.map((doctor) => (
-                <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                  {doctor.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <option value="">Pilih Dokter</option>
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id.toString()}>
+                {doctor.name}
+              </option>
+            ))}
+          </SelectInput>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="day" className="text-navy font-medium">Hari</Label>
-          <Select 
+          <SelectInput 
+            id="day"
             value={selectedDay} 
             onValueChange={(val) => setValue("day", val)}
+            className="bg-white border-navy/20"
           >
-            <SelectTrigger id="day" className="w-full bg-white border-navy/20">
-              <SelectValue placeholder="Pilih Hari" />
-            </SelectTrigger>
-            <SelectContent>
-              {days.map((day) => (
-                <SelectItem key={day} value={day}>
-                  {day}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {days.map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
+          </SelectInput>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="shift" className="text-navy font-medium">Shift</Label>
-          <Select 
+          <SelectInput 
+            id="shift"
             value={selectedShift} 
             onValueChange={(val) => setValue("shift", val)}
+            className="bg-white border-navy/20"
           >
-            <SelectTrigger id="shift" className="w-full bg-white border-navy/20">
-              <SelectValue placeholder="Pilih Shift" />
-            </SelectTrigger>
-            <SelectContent>
-              {shifts.map((shift) => (
-                <SelectItem key={shift} value={shift}>
-                  {shift}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {shifts.map((shift) => (
+              <option key={shift} value={shift}>
+                {shift}
+              </option>
+            ))}
+          </SelectInput>
         </div>
       </div>
 

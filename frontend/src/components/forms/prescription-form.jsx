@@ -1,7 +1,6 @@
 
-import { useTransition } from "react";
-import { medicines } from "/src/lib/mockData";
-import { createPrescription } from "/src/api/api.js";
+import { useTransition, useState, useEffect } from "react";
+import { createPrescription, listMedicines } from "/src/api/api.js";
 import { Button } from "/src/components/ui/button";
 import { Input } from "/src/components/ui/input";
 import { Textarea } from "/src/components/ui/textarea";
@@ -9,6 +8,13 @@ import { toast } from "sonner";
 
 export function PrescriptionForm({ examId }) {
   const [pending, startTransition] = useTransition();
+  const [medicines, setMedicines] = useState([]);
+
+  useEffect(() => {
+    listMedicines()
+      .then(setMedicines)
+      .catch(() => toast.error("Gagal memuat data obat"));
+  }, []);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -33,9 +39,10 @@ export function PrescriptionForm({ examId }) {
       <div>
         <p className="text-xs uppercase text-navy/70 font-medium mb-2">Obat</p>
         <select name="medicineId" className="h-10 w-full rounded-md border border-navy/20 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/20 focus:border-teal transition-colors shadow-sm text-navy">
+          <option value="">Pilih Obat</option>
           {medicines.map((medicine) => (
             <option key={medicine.id} value={medicine.id}>
-              {medicine.name}
+              {medicine.name} ({medicine.stock} {medicine.unit})
             </option>
           ))}
         </select>
