@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from sqlmodel import SQLModel, Field
 from datetime import datetime
 from pydantic import BaseModel # Keep BaseModel for PaymentCreate
@@ -20,3 +20,20 @@ class PaymentCreate(BaseModel):
     drug_cost: int
     examination_fee: int
     method: str
+
+class PaymentWithPatientInfo(Payment):
+    patient_name: str
+
+# Pydantic model for response with details (not a SQLModel)
+class PaymentWithDetails(BaseModel):
+    id: Optional[int] = None
+    patient_id: int
+    examination_id: int
+    drug_cost: int
+    examination_fee: int
+    total_amount: int
+    payment_date: datetime
+    method: str
+    status: str
+    patient_name: str
+    details: List[Dict[str, Any]]

@@ -241,39 +241,86 @@ export default function AdminFinancialReportPage() {
                   <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Jumlah</TableHead>
                   <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Metode</TableHead>
                   <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Status</TableHead>
+                  <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4 text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-navy/70">Memuat data...</TableCell>
+                    <TableCell colSpan={7} className="text-center py-8 text-navy/70">Memuat data...</TableCell>
                   </TableRow>
                 ) : (currentView === 'daily' ? dailyPayments : monthlyPayments).length > 0 ? (
                   (currentView === 'daily' ? dailyPayments : monthlyPayments).map((payment) => (
-                    <TableRow key={payment.id} className="hover:bg-sky-blue/30 transition-colors border-b border-navy/10">
-                      <TableCell className="font-medium text-navy pl-6 py-4">#{payment.id}</TableCell>
-                      <TableCell className="text-navy py-4">{payment.patient_name}</TableCell>
-                      <TableCell className="text-navy py-4">
-                        {format(new Date(payment.payment_date), "dd MMM yyyy, HH:mm", { locale: id })}
-                      </TableCell>
-                      <TableCell className="text-navy py-4 font-semibold text-green-600">{formatCurrency(payment.total_amount)}</TableCell>
-                      <TableCell className="text-navy py-4 capitalize">{payment.method}</TableCell>
-                      <TableCell className="text-navy py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          payment.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {payment.status === 'completed' ? 'Lunas' : 
-                           payment.status === 'pending' ? 'Pending' : 
-                           payment.status}
-                        </span>
-                      </TableCell>
-                    </TableRow>
+                    <>
+                      <TableRow key={`payment-${payment.id}`} className="hover:bg-sky-blue/30 transition-colors border-b border-navy/10">
+                        <TableCell className="font-medium text-navy pl-6 py-4">#{payment.id}</TableCell>
+                        <TableCell className="text-navy py-4">{payment.patient_name}</TableCell>
+                        <TableCell className="text-navy py-4">
+                          {format(new Date(payment.payment_date), "dd MMM yyyy, HH:mm", { locale: id })}
+                        </TableCell>
+                        <TableCell className="text-navy py-4 font-semibold text-green-600">{formatCurrency(payment.total_amount)}</TableCell>
+                        <TableCell className="text-navy py-4 capitalize">{payment.method}</TableCell>
+                        <TableCell className="text-navy py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            payment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {payment.status === 'completed' ? 'Lunas' :
+                             payment.status === 'pending' ? 'Pending' :
+                             payment.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-navy py-4 text-right">
+                          {payment.details && payment.details.length > 0 ? (
+                            <button
+                              onClick={() => {
+                                const detail = document.getElementById(`payment-detail-${payment.id}`);
+                                if (detail) {
+                                  detail.classList.toggle('hidden');
+                                }
+                              }}
+                              className="text-xs text-teal hover:text-teal/80"
+                            >
+                              ▼
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {payment.details && payment.details.length > 0 && (
+                        <TableRow id={`payment-detail-${payment.id}`} className="hidden bg-sky-blue/10 border-navy/10">
+                          <TableCell colSpan="7" className="p-4 text-sm">
+                            <div className="space-y-2">
+                              <h4 className="font-semibold text-navy">Rincian Pembayaran</h4>
+                              <div className="text-slate-600 space-y-1">
+                                <div className="flex justify-between">
+                                  <span>Biaya Pemeriksaan</span>
+                                  <span>{formatCurrency(payment.examination_fee)}</span>
+                                </div>
+                                {payment.details.map((item, index) => (
+                                  <div key={index} className="flex justify-between pl-4">
+                                    <span>
+                                      {item.drug_name} ({item.quantity} pcs)
+                                    </span>
+                                    <span>{formatCurrency(item.total_cost)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex justify-between font-semibold text-navy border-t border-navy/10 pt-2 mt-2">
+                                <span>Total</span>
+                                <span>{formatCurrency(payment.total_amount)}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-navy/70">
+                    <TableCell colSpan={7} className="text-center py-8 text-navy/70">
                       Tidak ada data pembayaran {currentView === 'daily' ? 'pada tanggal ini' : 'pada bulan ini'}.
                     </TableCell>
                   </TableRow>

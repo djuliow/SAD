@@ -1,20 +1,32 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from sqlmodel import Session, select, func
 from database import get_session
-from models.payment import Payment, PaymentCreate
+from models.payment import Payment, PaymentCreate, PaymentWithPatientInfo
 from models.patient import Patient
 from models.queue import QueueEntry
-from models.report import Examination
+from models.report import Examination, Prescription
+from models.drug import Drug
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
-class PaymentWithPatientInfo(Payment):
+# Pydantic model for response with details
+class PaymentWithDetails(BaseModel):
+    id: Optional[int] = None
+    patient_id: int
+    examination_id: int
+    drug_cost: int
+    examination_fee: int
+    total_amount: int
+    payment_date: datetime
+    method: str
+    status: str
     patient_name: str
+    details: List[Dict[str, Any]]
 
-@router.get("/", response_model=List[PaymentWithPatientInfo])
+@router.get("/", response_model=List[PaymentWithDetails])
 def get_payments(session: Session = Depends(get_session), date: Optional[str] = None):
     try:
         query = select(Payment, Patient).join(Patient, Payment.patient_id == Patient.id)
@@ -27,11 +39,39 @@ def get_payments(session: Session = Depends(get_session), date: Optional[str] = 
 
         payments_with_patients = session.exec(query).all()
 
+        # Get all prescriptions to build details
+        prescriptions = session.exec(select(Prescription)).all()
+        drugs = session.exec(select(Drug)).all()
+
+        # Create lookup maps for efficiency
+        drug_map = {d.id: d for d in drugs}
+        prescriptions_by_exam = {}
+        for pres in prescriptions:
+            if pres.examination_id not in prescriptions_by_exam:
+                prescriptions_by_exam[pres.examination_id] = []
+            prescriptions_by_exam[pres.examination_id].append(pres)
+
         enriched_payments = []
         for payment, patient in payments_with_patients:
             payment_data = payment.model_dump() # Use model_dump() for Pydantic v2
             payment_data["patient_name"] = patient.name
-            enriched_payment = PaymentWithPatientInfo(**payment_data)
+
+            # Add details for this payment's examination
+            details = []
+            if payment.examination_id in prescriptions_by_exam:
+                for pres in prescriptions_by_exam[payment.examination_id]:
+                    drug = drug_map.get(pres.drug_id)
+                    if drug:
+                        cost = pres.quantity * drug.harga
+                        details.append({
+                            "drug_name": drug.nama,
+                            "quantity": pres.quantity,
+                            "price_per_unit": drug.harga,
+                            "total_cost": cost
+                        })
+
+            payment_data["details"] = details
+            enriched_payment = PaymentWithDetails(**payment_data)
             enriched_payments.append(enriched_payment)
 
         return enriched_payments
