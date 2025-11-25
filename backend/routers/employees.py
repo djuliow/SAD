@@ -29,6 +29,15 @@ def update_employee(employee_id: int, employee_data: Employee, session: Session 
         setattr(employee, key, value)
         
     session.add(employee)
+    
+    # Update associated schedules if name changed
+    if "name" in employee_data_dict:
+        from models.schedule import ScheduleEntry
+        schedules = session.exec(select(ScheduleEntry).where(ScheduleEntry.user_id == employee_id)).all()
+        for schedule in schedules:
+            schedule.user_name = employee.name
+            session.add(schedule)
+            
     session.commit()
     session.refresh(employee)
     return employee
@@ -38,6 +47,12 @@ def delete_employee(employee_id: int, session: Session = Depends(get_session)):
     employee = session.get(Employee, employee_id)
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")
+        
+    # Delete associated schedules
+    from models.schedule import ScheduleEntry
+    schedules = session.exec(select(ScheduleEntry).where(ScheduleEntry.user_id == employee_id)).all()
+    for schedule in schedules:
+        session.delete(schedule)
         
     session.delete(employee)
     session.commit()

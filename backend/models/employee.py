@@ -5,3 +5,5 @@ class Employee(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     role: str
+    username: Optional[str] = None
+    password: Optional[str] = None

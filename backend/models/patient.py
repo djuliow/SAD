@@ -19,3 +19,4 @@ class PatientCreate(BaseModel):
     gender: str
     phone: str
     address: str
+    doctor_id: Optional[int] = None

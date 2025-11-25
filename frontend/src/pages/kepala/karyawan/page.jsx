@@ -7,7 +7,6 @@ import { Button } from "/src/components/ui/button";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Input } from "/src/components/ui/input";
 import { Label } from "/src/components/ui/label";
-import { Select, SelectItem } from "/src/components/ui/select";
 
 export default function KepalaKaryawanPage() {
     const [employees, setEmployees] = useState([]);
@@ -157,16 +156,18 @@ export default function KepalaKaryawanPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="role">Role</Label>
-                                <Select
+                                <Label htmlFor="role">Role</Label>
+                                <select
                                     id="role"
+                                    className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={formData.role}
-                                    onValueChange={(value) => setFormData({ ...formData, role: value })}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                 >
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="dokter">Dokter</SelectItem>
-                                    <SelectItem value="apoteker">Apoteker</SelectItem>
-                                    <SelectItem value="kepala">Kepala</SelectItem>
-                                </Select>
+                                    <option value="admin">Admin</option>
+                                    <option value="dokter">Dokter</option>
+                                    <option value="apoteker">Apoteker</option>
+                                    <option value="kepala">Kepala</option>
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="username">Username</Label>

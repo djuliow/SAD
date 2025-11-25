@@ -134,6 +134,7 @@ def register_patient(patient_create: PatientCreate, session: Session = Depends(g
         patient_id=new_patient.id, 
         patient_name=new_patient.name, 
         medicalRecordNo=new_medical_record_no,
+        doctor_id=patient_create.doctor_id,
         status="menunggu"
     )
     session.add(new_queue_entry)

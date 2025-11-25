@@ -9,6 +9,7 @@ from database import get_session
 from models.patient import Patient
 from models.queue import QueueEntry
 from models.payment import Payment
+from models.schedule import ScheduleEntry
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -26,6 +27,7 @@ class AdminDashboardSummary(BaseModel):
     income_today: float
     recent_queues: List[RecentQueue]
     queue_counts: Dict[str, int] # Added for queue counts by status
+    doctor_schedules: List[ScheduleEntry] = []
 
 # --------------------------
 
@@ -78,11 +80,15 @@ def get_admin_dashboard_summary(session: Session = Depends(get_session)):
         "selesai": session.exec(select(func.count(QueueEntry.id)).where(QueueEntry.status == "selesai")).one(),
     }
 
+    # 6. Doctor Schedules
+    doctor_schedules = session.exec(select(ScheduleEntry)).all()
+
     return AdminDashboardSummary(
         total_patients_all_time=total_patients_all_time,
         patients_today_count=patients_today_count,
         active_queue_count=active_queue_count,
         income_today=income_today,
         recent_queues=recent_queues,
-        queue_counts=queue_counts # Added to the response model
+        queue_counts=queue_counts,
+        doctor_schedules=doctor_schedules
     )

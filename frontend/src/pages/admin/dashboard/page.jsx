@@ -143,29 +143,57 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Antrean Terkini</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {recent_queues.length > 0 ? (
-              recent_queues.map((queue, index) => (
-                <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 px-4 py-3">
-                  <p className="text-sm font-bold text-navy">
-                    <span className="text-xs text-slate-500 font-normal mr-1">{index + 1}.</span>
-                    {queue.patient_name}
-                    <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
-                  </p>
-                  {getStatusBadge(queue.status)}
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-center text-navy/70 py-4">Tidak ada antrean saat ini.</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Antrean Terkini</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recent_queues.length > 0 ? (
+                recent_queues.map((queue, index) => (
+                  <div key={queue.id} className="flex items-center justify-between rounded-lg bg-sky-blue/50 px-4 py-3">
+                    <p className="text-sm font-bold text-navy">
+                      <span className="text-xs text-slate-500 font-normal mr-1">{index + 1}.</span>
+                      {queue.patient_name}
+                      <span className="text-xs text-slate-500 font-normal ml-1">({queue.medicalRecordNo})</span>
+                    </p>
+                    {getStatusBadge(queue.status)}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-center text-navy/70 py-4">Tidak ada antrean saat ini.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Jadwal Dokter</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {summary.doctor_schedules && summary.doctor_schedules.length > 0 ? (
+                summary.doctor_schedules.map((schedule) => (
+                  <div key={schedule.id} className="flex items-center justify-between rounded-lg bg-beige px-4 py-3 border border-navy/10">
+                    <div>
+                      <p className="text-sm font-bold text-navy">{schedule.user_name}</p>
+                      <p className="text-xs text-navy/70">{schedule.day}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-navy">{schedule.time}</p>
+                      <p className="text-[10px] text-navy/60">{schedule.activity}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-center text-navy/70 py-4">Belum ada jadwal dokter.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
