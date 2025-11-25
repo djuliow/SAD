@@ -58,39 +58,40 @@ export default function ApotekPrescriptionPage() {
   return (
     <div className="space-y-6">
       {/* Apotek Queue Card */}
-      <div className="bg-white border border-navy/10 shadow-md rounded-lg p-4">
-        <h2 className="text-lg font-bold text-navy mb-3">Antrian Apotek</h2>
-        {apotekQueue.length > 0 ? (
-          <div className="space-y-2">
-            {apotekQueue.map((queue) => (
-              <div key={queue.id} className="flex justify-between items-center p-3 bg-sky-blue/30 rounded border border-navy/10">
-                <div>
-                  <p className="font-medium">{queue.patient_name}</p>
-                  <p className="text-sm text-slate-600">MRN: {queue.medicalRecordNo}</p>
+      <div className="bg-white border border-navy/10 shadow-md rounded-xl overflow-hidden">
+        <div className="bg-beige border-b border-navy/10 rounded-t-xl p-4">
+          <h2 className="text-lg font-bold text-navy">Antrian Apotek</h2>
+        </div>
+        <div className="p-6 pt-4">
+          {apotekQueue.length > 0 ? (
+            <div className="space-y-2">
+              {apotekQueue.map((queue) => (
+                <div key={queue.id} className="flex justify-between items-center p-3 bg-sky-blue/30 rounded border border-navy/10">
+                  <div>
+                    <p className="font-medium text-navy">{queue.patient_name}</p>
+                    <p className="text-sm text-navy/70">MRN: {queue.medicalRecordNo}</p>
+                  </div>
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    Apotek
+                  </span>
                 </div>
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  Apotek
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-slate-500 text-center py-4">Tidak ada pasien di apotek saat ini</p>
-        )}
+              ))}
+            </div>
+          ) : (
+            <p className="text-navy/70 text-center py-4">Tidak ada pasien di apotek saat ini</p>
+          )}
+        </div>
       </div>
 
       {/* Prescription Table */}
-      <div>
-        <h2 className="text-lg font-bold text-navy mb-3">Resep Masuk</h2>
-        <PrescriptionTable
-          prescriptions={prescriptions}
-          medicines={medicines}
-          onFulfill={handleFulfill}
-          onFulfillAll={handleFulfillAll}
-          disabled={loading}
-          patients={patientsWithPendingPrescriptions}
-        />
-      </div>
+      <PrescriptionTable
+        prescriptions={prescriptions}
+        medicines={medicines}
+        onFulfill={handleFulfill}
+        onFulfillAll={handleFulfillAll}
+        disabled={loading}
+        patients={patientsWithPendingPrescriptions}
+      />
     </div>
   );
 }

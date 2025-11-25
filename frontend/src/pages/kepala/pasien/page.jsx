@@ -25,7 +25,7 @@ export default function KepalaPasienPage() {
 
     return (
         <Card className="bg-white border border-navy/10 shadow-md">
-            <CardHeader className="bg-beige border-b border-navy/10">
+            <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
                 <CardTitle className="text-lg font-bold text-navy">Data Pasien</CardTitle>
                 <p className="text-xs text-navy/70">Daftar semua pasien terdaftar.</p>
             </CardHeader>

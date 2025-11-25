@@ -3,7 +3,7 @@ import { cn } from "/src/lib/utils.js";
 const Table = ({ className, ...props }) => (
   <div className="w-full overflow-auto">
     <table
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm border-collapse border border-slate-300", className)}
       {...props}
     />
   </div>
@@ -20,7 +20,7 @@ const TableBody = ({ className, ...props }) => (
 const TableHead = ({ className, ...props }) => (
   <th
     className={cn(
-      "h-10 px-2 text-left align-middle font-medium text-slate-500 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "h-10 px-4 text-left align-middle font-medium text-navy [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] border-r border-slate-300 last:border-r-0",
       className
     )}
     {...props}
@@ -30,7 +30,7 @@ const TableHead = ({ className, ...props }) => (
 const TableRow = ({ className, ...props }) => (
   <tr
     className={cn(
-      "border-b transition-colors hover:bg-slate-100/50 data-[state=selected]:bg-slate-100",
+      "border-b border-slate-300 transition-colors hover:bg-sky-blue/20 data-[state=selected]:bg-muted",
       className
     )}
     {...props}
@@ -40,7 +40,7 @@ const TableRow = ({ className, ...props }) => (
 const TableCell = ({ className, ...props }) => (
   <td
     className={cn(
-      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "p-4 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] border-r border-slate-300 last:border-r-0 text-navy",
       className
     )}
     {...props}

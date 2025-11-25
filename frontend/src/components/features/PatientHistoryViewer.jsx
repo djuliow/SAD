@@ -13,19 +13,19 @@ function ExaminationCard({ exam }) {
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-navy">{exam.diagnosis}</p>
-          <p className="text-sm text-slate-600">{exam.complaint}</p>
+          <p className="text-sm text-navy/80">{exam.complaint}</p>
         </div>
-        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">
+        <p className="text-xs text-navy/60 font-medium whitespace-nowrap">
           {format(new Date(exam.date), "dd MMM yyyy", { locale: id })}
         </p>
       </div>
-      <p className="text-sm text-slate-500 mt-2">
+      <p className="text-sm text-navy/60 mt-2">
         <span className="font-semibold">Catatan:</span> {exam.notes || "-"}
       </p>
       {exam.prescriptions.length > 0 && (
         <div className="mt-3 pt-3 border-t border-navy/10">
           <p className="font-semibold text-sm text-navy mb-2">Resep:</p>
-          <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
+          <ul className="list-disc list-inside space-y-1 text-sm text-navy/70">
             {exam.prescriptions.map((p, i) => (
               <li key={i}>
                 {p.drug_name} ({p.quantity} pcs) - <span className="text-xs">"{p.notes}"</span>
@@ -72,11 +72,11 @@ export function PatientHistoryViewer({ patientId }) {
   return (
     <div className="space-y-6">
       {/* Patient Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Diri Pasien</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Data Diri Pasien</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <CardContent className="p-6 pt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-navy">
           <p><span className="font-semibold">Nama:</span> {patient_info.name}</p>
           <p><span className="font-semibold">No. RM:</span> {patient_info.medicalRecordNo}</p>
           <p><span className="font-semibold">Tgl. Lahir:</span> {format(new Date(patient_info.dob), "dd MMMM yyyy", { locale: id })}</p>
@@ -87,37 +87,37 @@ export function PatientHistoryViewer({ patientId }) {
       </Card>
 
       {/* Examination History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Pemeriksaan</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Riwayat Pemeriksaan</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-6 pt-4 space-y-3">
           {examinations.length > 0 ? (
             examinations.map((exam) => <ExaminationCard key={exam.id} exam={exam} />)
           ) : (
-            <p className="text-sm text-slate-500 text-center py-4">Belum ada riwayat pemeriksaan.</p>
+            <p className="text-sm text-navy/70 text-center py-4">Belum ada riwayat pemeriksaan.</p>
           )}
         </CardContent>
       </Card>
 
       {/* Payment History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Pembayaran</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Riwayat Pembayaran</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-6 pt-4 space-y-3">
           {payments.length > 0 ? (
             payments.map((p) => (
               <div key={p.id} className="border border-navy/10 rounded-lg p-3 flex justify-between items-center bg-white">
                 <div>
-                  <p className="font-semibold">{formatCurrency(p.total_amount)}</p>
-                  <p className="text-xs text-slate-500">Metode: {p.method}</p>
+                  <p className="font-semibold text-navy">{formatCurrency(p.total_amount)}</p>
+                  <p className="text-xs text-navy/60">Metode: {p.method}</p>
                 </div>
-                <p className="text-xs text-slate-500">{format(new Date(p.payment_date), "dd MMM yyyy, HH:mm", { locale: id })}</p>
+                <p className="text-xs text-navy/60">{format(new Date(p.payment_date), "dd MMM yyyy, HH:mm", { locale: id })}</p>
               </div>
             ))
           ) : (
-            <p className="text-sm text-slate-500 text-center py-4">Belum ada riwayat pembayaran.</p>
+            <p className="text-sm text-navy/70 text-center py-4">Belum ada riwayat pembayaran.</p>
           )}
         </CardContent>
       </Card>

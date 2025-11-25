@@ -39,28 +39,29 @@ export default function DokterHistoryPage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
       {/* Patient List */}
-      <Card className="h-fit">
-        <CardHeader>
-          <CardTitle>Daftar Pasien</CardTitle>
-          <Input 
+      <Card className="bg-white border border-navy/10 shadow-md h-fit">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Daftar Pasien</CardTitle>
+          <Input
             placeholder="Cari nama atau no. RM..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
+            className="mt-2 bg-white border-navy/20"
           />
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 pt-4">
           {isLoading ? (
-            <p className="text-sm text-center text-slate-500">Memuat...</p>
+            <p className="text-sm text-center text-navy/70">Memuat...</p>
           ) : (
             <ul className="space-y-2 max-h-[60vh] overflow-y-auto">
               {filteredPatients.map(p => (
                 <li key={p.id}>
-                  <button 
+                  <button
                     onClick={() => setSelectedPatientId(p.id)}
-                    className={`w-full text-left p-3 rounded-md transition-colors ${selectedPatientId === p.id ? 'bg-teal text-white' : 'hover:bg-sky-blue/50'}`}
+                    className={`w-full text-left p-3 rounded-md transition-colors ${selectedPatientId === p.id ? 'bg-teal text-white' : 'hover:bg-sky-blue/50 text-navy'}`}
                   >
                     <p className="font-semibold">{p.name}</p>
-                    <p className="text-xs">{p.medicalRecordNo}</p>
+                    <p className="text-xs opacity-80">{p.medicalRecordNo}</p>
                   </button>
                 </li>
               ))}
@@ -74,8 +75,8 @@ export default function DokterHistoryPage() {
         {selectedPatientId ? (
           <PatientHistoryViewer patientId={selectedPatientId} />
         ) : (
-          <div className="flex items-center justify-center h-full rounded-lg bg-white border border-dashed border-navy/20">
-            <p className="text-slate-500">Pilih pasien untuk melihat riwayatnya.</p>
+          <div className="flex items-center justify-center h-full rounded-xl bg-white border border-navy/10 shadow-md border-dashed border-navy/20">
+            <p className="text-navy/70">Pilih pasien untuk melihat riwayatnya.</p>
           </div>
         )}
       </div>

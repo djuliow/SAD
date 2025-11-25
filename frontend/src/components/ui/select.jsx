@@ -55,10 +55,6 @@ const SelectTrigger = ({ children, className, ...props }) => {
     child => child.type === SelectValue
   );
 
-  const displayValue = selectValueChild ?
-    (selectValueChild.props.placeholder || selectedValue || "Pilih opsi") :
-    (selectedValue || "Pilih opsi");
-
   return (
     <div
       className={cn(
@@ -68,8 +64,10 @@ const SelectTrigger = ({ children, className, ...props }) => {
       onClick={() => setIsOpen(!isOpen)}
       {...props}
     >
-      <span className="truncate">{displayValue}</span>
-      <span className="ml-2">{isOpen ? "▲" : "▼"}</span>
+      {selectValueChild ? selectValueChild : <span className="truncate">{selectedValue || "Pilih opsi"}</span>}
+      <span className="ml-2 opacity-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="m6 9 6 6 6-6"/></svg>
+      </span>
     </div>
   );
 };
@@ -109,13 +107,16 @@ const SelectItem = ({ children, value, ...props }) => {
 };
 
 // Komponen SelectValue untuk menampilkan nilai terpilih
-const SelectValue = ({ placeholder, className, ...props }) => {
+const SelectValue = ({ placeholder, className, children, ...props }) => {
   const { selectedValue } = React.useContext(SelectContext);
-  const displayValue = selectedValue || placeholder;
+  
+  // If children are provided (custom display text), use them.
+  // Otherwise, fallback to selectedValue or placeholder.
+  const displayContent = children || selectedValue || placeholder;
 
   return (
     <span className={cn("truncate", className)} {...props}>
-      {displayValue}
+      {displayContent}
     </span>
   );
 };

@@ -23,33 +23,33 @@ export default function AdminRegistrationPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[400px,1fr]">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Pendaftaran Pasien</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md h-fit">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Pendaftaran Pasien</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <PatientForm onSuccess={fetchPatients} />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Data Pasien</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Data Pasien</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <Table>
             <TableHeader>
-              <TableRow className="bg-beige">
-                <TableHead className="text-navy font-bold">Rekam Medis</TableHead>
-                <TableHead className="text-navy font-bold">Nama</TableHead>
-                <TableHead className="text-navy font-bold">Telepon</TableHead>
+              <TableRow className="bg-beige hover:bg-beige">
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider pl-6 py-4">Rekam Medis</TableHead>
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Nama</TableHead>
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Telepon</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {patients.map((patient) => (
                 <TableRow key={patient.id} className="hover:bg-sky-blue/30 transition-colors">
-                  <TableCell className="font-medium text-navy">{patient.medicalRecordNo}</TableCell>
-                  <TableCell className="text-navy">{patient.name}</TableCell>
-                  <TableCell className="text-navy">{patient.phone}</TableCell>
+                  <TableCell className="font-medium text-navy pl-6 py-4">{patient.medicalRecordNo}</TableCell>
+                  <TableCell className="text-navy py-4">{patient.name}</TableCell>
+                  <TableCell className="text-navy py-4">{patient.phone}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

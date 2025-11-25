@@ -155,21 +155,21 @@ export default function AdminFinancialReportPage() {
 
       {/* View Toggle and Filters */}
       <Card className="bg-white border border-navy/10 shadow-md">
-        <CardHeader className="bg-beige border-b border-navy/10 flex flex-row items-center justify-between">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg font-bold text-navy">Laporan Keuangan {currentView === 'daily' ? 'Harian' : 'Bulanan'}</CardTitle>
             <p className="text-xs text-navy/70">Data pembayaran {currentView === 'daily' ? 'harian' : 'bulanan'} klinik.</p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              variant={currentView === 'daily' ? 'default' : 'outline'} 
+            <Button
+              variant={currentView === 'daily' ? 'default' : 'outline'}
               onClick={() => setCurrentView('daily')}
               className={currentView === 'daily' ? 'bg-teal hover:bg-teal/90 text-white' : 'text-navy'}
             >
               Harian
             </Button>
-            <Button 
-              variant={currentView === 'monthly' ? 'default' : 'outline'} 
+            <Button
+              variant={currentView === 'monthly' ? 'default' : 'outline'}
               onClick={() => setCurrentView('monthly')}
               className={currentView === 'monthly' ? 'bg-teal hover:bg-teal/90 text-white' : 'text-navy'}
             >
@@ -286,7 +286,7 @@ export default function AdminFinancialReportPage() {
 
       {/* Download Section */}
       <Card className="bg-white border border-navy/10 shadow-md">
-        <CardHeader className="bg-beige border-b border-navy/10">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
           <CardTitle className="text-lg font-bold text-navy">Ekspor Laporan</CardTitle>
           <p className="text-xs text-navy/70">Unduh laporan dalam format yang Anda inginkan.</p>
         </CardHeader>

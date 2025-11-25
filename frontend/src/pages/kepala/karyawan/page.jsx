@@ -80,7 +80,7 @@ export default function KepalaKaryawanPage() {
     return (
         <div className="space-y-6">
             <Card className="bg-white border border-navy/10 shadow-md">
-                <CardHeader className="bg-beige border-b border-navy/10 flex flex-row items-center justify-between">
+                <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-lg font-bold text-navy">Data Karyawan</CardTitle>
                         <p className="text-xs text-navy/70">Daftar semua karyawan klinik.</p>

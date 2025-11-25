@@ -25,46 +25,46 @@ export default function ApotekStockPage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
       <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Tambah Obat Baru</CardTitle>
+        <Card className="bg-white border border-navy/10 shadow-md h-fit">
+          <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+            <CardTitle className="text-lg font-bold text-navy">Tambah Obat Baru</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <NewMedicineForm onSuccess={fetchMedicines} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Perbarui Stok</CardTitle>
+        <Card className="bg-white border border-navy/10 shadow-md h-fit">
+          <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+            <CardTitle className="text-lg font-bold text-navy">Perbarui Stok</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <MedicineForm medicines={medicines} onSuccess={fetchMedicines} />
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Inventori Obat</CardTitle>
+      <Card className="bg-white border border-navy/10 shadow-md">
+        <CardHeader className="bg-beige border-b border-navy/10 rounded-t-xl">
+          <CardTitle className="text-lg font-bold text-navy">Inventori Obat</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <Table>
             <TableHeader>
-              <TableRow className="bg-beige">
-                <TableHead className="text-navy font-bold">Nama</TableHead>
-                <TableHead className="text-navy font-bold">Stok</TableHead>
-                <TableHead className="text-navy font-bold">Harga</TableHead>
+              <TableRow className="bg-beige hover:bg-beige">
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider pl-6 py-4">Nama</TableHead>
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Stok</TableHead>
+                <TableHead className="text-navy font-bold uppercase text-xs tracking-wider py-4">Harga</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {medicines.map((medicine) => (
                 <TableRow key={medicine.id} className="hover:bg-sky-blue/30 transition-colors">
-                  <TableCell className="font-medium text-navy">{medicine.nama}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium text-navy pl-6 py-4">{medicine.nama}</TableCell>
+                  <TableCell className="py-4">
                     <span className={medicine.stok < 50 ? "text-red-600 font-semibold" : "text-navy"}>
                       {medicine.stok}
                     </span>
                   </TableCell>
-                  <TableCell className="text-navy">{medicine.harga}</TableCell>
+                  <TableCell className="text-navy py-4">{medicine.harga}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

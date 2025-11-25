@@ -84,7 +84,7 @@ export function AppShell({ children }) {
 
   return (
     <div className="flex min-h-screen bg-sky-blue">
-      <aside className="hidden w-64 flex-shrink-0 border-r border-navy/10 bg-navy px-4 py-6 shadow-xl lg:block">
+      <aside className="hidden w-64 flex-shrink-0 border-r border-navy/10 bg-navy px-4 py-6 shadow-xl lg:block fixed h-full z-[90] overflow-y-auto">
         <div className="mb-8 space-y-1 rounded-xl bg-navy-light p-5 text-white shadow-md">
           <p className="text-xs uppercase text-white/90 font-semibold tracking-wide">SISTEM INFORMASI</p>
           <h1 className="text-xl font-bold text-white">Klinik Sentosa</h1>
@@ -117,8 +117,8 @@ export function AppShell({ children }) {
         </nav>
         <ActiveQueueInfo />
       </aside>
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-navy/10 bg-navy px-6 py-4 shadow-md">
+      <div className="lg:ml-64 flex flex-1 flex-col">
+        <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between border-b border-navy/10 bg-navy px-6 py-4 shadow-md z-[100]">
           <div>
             <p className="text-sm text-white/90 font-medium">Selamat datang,</p>
             <p className="text-lg font-bold text-white">{employeeName}</p>
@@ -143,7 +143,7 @@ export function AppShell({ children }) {
             </Button>
           </div>
         </header>
-        <main className="flex-1 px-6 py-6 bg-sky-blue">{children}</main>
+        <main className="pt-25 px-6 py-6 bg-sky-blue flex-1">{children}</main>
       </div>
     </div>
   );

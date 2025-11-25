@@ -1,10 +1,11 @@
-
 import { useTransition, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { upsertSchedule, listEmployees } from "/src/api/api.js";
 import { Button } from "/src/components/ui/button";
+import { Label } from "/src/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -22,12 +23,18 @@ export function ScheduleForm({ onSuccess }) {
   const {
     handleSubmit,
     setValue,
-    watch
+    watch,
+    formState: { errors }
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { userId: "", role: "DOKTER", day: days[0], shift: shifts[0] }
   });
   const [pending, startTransition] = useTransition();
+
+  // Watch values to update UI state if needed
+  const selectedUserId = watch("userId");
+  const selectedDay = watch("day");
+  const selectedShift = watch("shift");
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -70,52 +77,81 @@ export function ScheduleForm({ onSuccess }) {
     });
   };
 
+  // Helper to get doctor name for display
+  const getSelectedDoctorName = () => {
+    const doctor = doctors.find(d => d.id.toString() === selectedUserId);
+    return doctor ? doctor.name : "Pilih Dokter";
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
-      <div className="md:col-span-2">
-        <p className="text-xs uppercase text-slate-400">Pilih Dokter</p>
-        <select
-          value={watch("userId")}
-          onChange={(e) => setValue("userId", e.target.value)}
-          className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {doctors.map((user) => (
-            <option key={user.id} value={user.id.toString()}>
-              {user.name}
-            </option>
-          ))}
-        </select>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="doctor" className="text-navy font-medium">Pilih Dokter</Label>
+          <Select 
+            value={selectedUserId} 
+            onValueChange={(val) => setValue("userId", val)}
+          >
+            <SelectTrigger id="doctor" className="w-full bg-white border-navy/20">
+              <SelectValue placeholder="Pilih Dokter">
+                {getSelectedDoctorName()}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {doctors.map((doctor) => (
+                <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                  {doctor.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="day" className="text-navy font-medium">Hari</Label>
+          <Select 
+            value={selectedDay} 
+            onValueChange={(val) => setValue("day", val)}
+          >
+            <SelectTrigger id="day" className="w-full bg-white border-navy/20">
+              <SelectValue placeholder="Pilih Hari" />
+            </SelectTrigger>
+            <SelectContent>
+              {days.map((day) => (
+                <SelectItem key={day} value={day}>
+                  {day}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="shift" className="text-navy font-medium">Shift</Label>
+          <Select 
+            value={selectedShift} 
+            onValueChange={(val) => setValue("shift", val)}
+          >
+            <SelectTrigger id="shift" className="w-full bg-white border-navy/20">
+              <SelectValue placeholder="Pilih Shift" />
+            </SelectTrigger>
+            <SelectContent>
+              {shifts.map((shift) => (
+                <SelectItem key={shift} value={shift}>
+                  {shift}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-      <div>
-        <p className="text-xs uppercase text-slate-400">Hari</p>
-        <select
-          value={watch("day")}
-          onChange={(e) => setValue("day", e.target.value)}
-          className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {days.map((day) => (
-            <option key={day} value={day}>
-              {day}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <p className="text-xs uppercase text-slate-400">Shift</p>
-        <select
-          value={watch("shift")}
-          onChange={(e) => setValue("shift", e.target.value)}
-          className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {shifts.map((shift) => (
-            <option key={shift} value={shift}>
-              {shift}
-            </option>
-          ))}
-        </select>
-      </div>
-      <Button className="md:col-span-2" disabled={pending} type="submit">
-        Simpan Jadwal
+
+      <Button 
+        className="w-full bg-teal hover:bg-teal/90 text-white font-medium py-2.5" 
+        disabled={pending} 
+        type="submit"
+      >
+        {pending ? "Menyimpan..." : "Simpan Jadwal"}
       </Button>
     </form>
   );
