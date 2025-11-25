@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List, Optional
 from sqlmodel import Session, select
 from database import get_session
-from models.report import Prescription, PrescriptionCreate # Prescription is in report.py
+from models.report import Prescription, PrescriptionCreate, Examination # Prescription is in report.py
+from models.patient import Patient
 from models.drug import Drug # Need Drug for stock management
 
 router = APIRouter(prefix="/prescriptions", tags=["Prescriptions"])
@@ -204,3 +205,99 @@ def fulfill_all_prescriptions(examination_id: int, session: Session = Depends(ge
         session.refresh(queue_entry)
 
     return updated_prescriptions
+
+
+# Import BaseModel for response model
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class PrescriptionWithPatientInfo(BaseModel):
+    id: int
+    examination_id: int
+    drug_id: int
+    quantity: int
+    notes: str
+    status: str
+    patient_name: str
+    patient_medical_record_no: str
+    drug_name: str
+    drug_price: int
+    prescription_date: datetime
+@router.get("/report", response_model=List[PrescriptionWithPatientInfo])
+def get_prescription_report(
+    session: Session = Depends(get_session),
+    status: Optional[str] = Query(None, description="Filter by prescription status (menunggu/selesai)")
+):
+    """Get prescription report with patient and drug information"""
+    # Build query based on status filter
+    query = select(
+        Prescription
+    )
+
+    if status:
+        query = query.where(Prescription.status == status)
+
+    prescriptions = session.exec(query).all()
+
+    result = []
+    for pres in prescriptions:
+        # Get related information for each prescription
+        patient_name = "Data tidak ditemukan"
+        patient_medical_record_no = "N/A"
+        drug_name = "Data tidak ditemukan"
+        drug_price = 0
+        prescription_date = getattr(pres, 'created_at', datetime.now())
+
+        # Get related data using manual queries to avoid join issues
+        try:
+            # Get patient info via examination
+            if pres.examination_id:
+                examination = session.exec(
+                    select(Examination).where(Examination.id == pres.examination_id)
+                ).first()
+
+                if examination:
+                    patient = session.exec(
+                        select(Patient).where(Patient.id == examination.patient_id)
+                    ).first()
+
+                    if patient:
+                        patient_name = patient.name
+                        patient_medical_record_no = patient.medicalRecordNo or "N/A"
+
+                    if examination.date:
+                        prescription_date = examination.date
+
+            # Get drug info
+            if pres.drug_id:
+                drug = session.exec(
+                    select(Drug).where(Drug.id == pres.drug_id)
+                ).first()
+
+                if drug:
+                    drug_name = drug.nama
+                    drug_price = drug.harga or 0
+
+        except Exception as e:
+            # Log error but continue processing
+            print(f"Error getting related data for prescription {pres.id}: {str(e)}")
+            pass
+
+        prescription_data = {
+            "id": pres.id,
+            "examination_id": pres.examination_id or 0,  # Use 0 as default if None
+            "drug_id": pres.drug_id or 0,  # Use 0 as default if None
+            "quantity": pres.quantity,
+            "notes": pres.notes,
+            "status": pres.status,
+            "patient_name": patient_name,
+            "patient_medical_record_no": patient_medical_record_no,
+            "drug_name": drug_name,
+            "drug_price": drug_price,
+            "prescription_date": prescription_date
+        }
+
+        result.append(PrescriptionWithPatientInfo(**prescription_data))
+
+    return result

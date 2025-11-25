@@ -16,7 +16,8 @@ export const NAVIGATION = {
   apoteker: [
     { label: "Dashboard", href: "/apotek/dashboard", icon: "activity" },
     { label: "Resep", href: "/apotek/resep", icon: "pill" },
-    { label: "Stok", href: "/apotek/stok", icon: "package" }
+    { label: "Stok", href: "/apotek/stok", icon: "package" },
+    { label: "Laporan Obat", href: "/apotek/laporan", icon: "chart" }
   ],
   kepala: [
     { label: "Laporan", href: "/kepala/laporan", icon: "chart" },

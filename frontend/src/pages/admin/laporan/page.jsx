@@ -222,9 +222,9 @@ export default function AdminFinancialReportPage() {
                 </Button>
               </>
             )}
-            <Button 
-              onClick={handleRefresh} 
-              className="flex items-center gap-2 bg-teal hover:bg-teal/90 text-white"
+            <Button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 bg-navy hover:bg-navy/90 text-white"
             >
               <Filter className="h-4 w-4" />
               Refresh

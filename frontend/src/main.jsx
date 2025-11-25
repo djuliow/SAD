@@ -12,6 +12,7 @@ import AdminSchedulePage from './pages/admin/jadwal/page';
 import ApotekDashboardPage from './pages/apotek/dashboard/page';
 import ApotekPrescriptionPage from './pages/apotek/resep/page';
 import ApotekStockPage from './pages/apotek/stok/page';
+import ApotekReportPage from './pages/apotek/laporan/page';
 import DokterDashboardPage from './pages/dokter/dashboard/page';
 import DokterQueuePage from './pages/dokter/antrian/page';
 import DokterHistoryPage from './pages/dokter/riwayat/page';
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="apotek/dashboard" element={<ApotekDashboardPage />} />
           <Route path="apotek/resep" element={<ApotekPrescriptionPage />} />
           <Route path="apotek/stok" element={<ApotekStockPage />} />
+          <Route path="apotek/laporan" element={<ApotekReportPage />} />
           <Route path="dokter/dashboard" element={<DokterDashboardPage />} />
           <Route path="dokter/antrian" element={<DokterQueuePage />} />
           <Route path="dokter/riwayat" element={<DokterHistoryPage />} />

@@ -112,6 +112,15 @@ export async function updatePrescription(prescriptionId, payload) {
   return response;
 }
 
+export async function getPrescriptionReport(status) {
+  let endpoint = '/prescriptions/report';
+  if (status) {
+    endpoint += `?status=${status}`;
+  }
+  const response = await apiRequest(endpoint);
+  return response;
+}
+
 export async function listPrescriptions(status) {
   let endpoint = '/prescriptions/';
   if (status) {
