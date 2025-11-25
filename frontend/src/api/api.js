@@ -279,3 +279,13 @@ export async function deleteEmployee(id) {
   });
   return response;
 }
+
+export async function getPatientStats() {
+  const response = await apiRequest('/patients/stats');
+  return response;
+}
+
+export async function getDoctorPerformance() {
+  const response = await apiRequest('/doctors/performance');
+  return response;
+}

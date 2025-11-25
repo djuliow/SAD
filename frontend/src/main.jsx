@@ -21,6 +21,7 @@ import KepalaReportPage from './pages/kepala/laporan/page';
 import KepalaSchedulePage from './pages/kepala/jadwal/page';
 import KepalaKaryawanPage from './pages/kepala/karyawan/page';
 import KepalaPasienPage from './pages/kepala/pasien/page';
+import KepalaKinerjaPage from './pages/kepala/kinerja/page';
 
 import './index.css';
 
@@ -49,6 +50,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="kepala/jadwal" element={<KepalaSchedulePage />} />
           <Route path="kepala/karyawan" element={<KepalaKaryawanPage />} />
           <Route path="kepala/pasien" element={<KepalaPasienPage />} />
+          <Route path="kepala/kinerja" element={<KepalaKinerjaPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

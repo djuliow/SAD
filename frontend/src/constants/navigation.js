@@ -22,6 +22,7 @@ export const NAVIGATION = {
   kepala: [
     { label: "Laporan", href: "/kepala/laporan", icon: "chart" },
     { label: "Jadwal", href: "/kepala/jadwal", icon: "calendar" },
+    { label: "Kinerja Dokter", href: "/kepala/kinerja", icon: "activity" },
     { label: "Data Karyawan", href: "/kepala/karyawan", icon: "users" },
     { label: "Data Pasien", href: "/kepala/pasien", icon: "user" }
   ]

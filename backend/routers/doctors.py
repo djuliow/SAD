@@ -104,3 +104,44 @@ def create_examination_record(payload: ExaminationCreate, session: Session = Dep
     session.refresh(new_examination)
     session.refresh(queue_entry)
     return new_examination
+
+# --- Performance Tracking ---
+class DoctorPerformance(BaseModel):
+    doctor_id: int
+    doctor_name: str
+    total_patients: int
+    daily_patients: int # Patients handled today
+
+@router.get("/performance", response_model=List[DoctorPerformance])
+def get_doctor_performance(session: Session = Depends(get_session)):
+    from models.employee import Employee # Import here to avoid circular dependency if any
+    
+    # Get all doctors
+    doctors = session.exec(select(Employee).where(Employee.role == "dokter")).all()
+    
+    performance_list = []
+    for doctor in doctors:
+        # Total patients (completed queues)
+        total_patients = session.exec(
+            select(func.count()).select_from(QueueEntry)
+            .where(QueueEntry.doctor_id == doctor.id)
+            .where(QueueEntry.status == "selesai")
+        ).one()
+        
+        # Daily patients (completed queues today)
+        today = datetime.now().date()
+        daily_patients = session.exec(
+            select(func.count()).select_from(QueueEntry)
+            .where(QueueEntry.doctor_id == doctor.id)
+            .where(QueueEntry.status == "selesai")
+            .where(func.date(QueueEntry.created_at) == str(today))
+        ).one()
+        
+        performance_list.append(DoctorPerformance(
+            doctor_id=doctor.id,
+            doctor_name=doctor.name,
+            total_patients=total_patients,
+            daily_patients=daily_patients
+        ))
+        
+    return performance_list

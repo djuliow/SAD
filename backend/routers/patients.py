@@ -39,7 +39,39 @@ class PatientHistory(BaseModel):
     examinations: List[ExaminationWithDetails]
     payments: List[PaymentDetail]
 
+class VisitStats(BaseModel):
+    date: str
+    count: int
+
+class PatientStats(BaseModel):
+    daily_visits: List[VisitStats]
+    monthly_visits: List[VisitStats]
+
 # -----------------------------------------
+
+@router.get("/stats", response_model=PatientStats)
+def get_patient_stats(session: Session = Depends(get_session)):
+    # Daily visits (last 7 days)
+    # Note: SQLite specific date function
+    daily_results = session.exec(
+        select(func.strftime('%Y-%m-%d', QueueEntry.created_at), func.count(QueueEntry.id))
+        .where(func.date(QueueEntry.created_at) >= func.date('now', '-7 days'))
+        .group_by(func.strftime('%Y-%m-%d', QueueEntry.created_at))
+        .order_by(func.strftime('%Y-%m-%d', QueueEntry.created_at))
+    ).all()
+    
+    # Monthly visits (last 6 months)
+    monthly_results = session.exec(
+        select(func.strftime('%Y-%m', QueueEntry.created_at), func.count(QueueEntry.id))
+        .where(func.date(QueueEntry.created_at) >= func.date('now', '-6 months'))
+        .group_by(func.strftime('%Y-%m', QueueEntry.created_at))
+        .order_by(func.strftime('%Y-%m', QueueEntry.created_at))
+    ).all()
+    
+    return PatientStats(
+        daily_visits=[VisitStats(date=r[0], count=r[1]) for r in daily_results],
+        monthly_visits=[VisitStats(date=r[0], count=r[1]) for r in monthly_results]
+    )
 
 @router.get("/", response_model=List[Patient])
 def get_patients(session: Session = Depends(get_session)):
