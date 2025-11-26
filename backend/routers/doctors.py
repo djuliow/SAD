@@ -5,9 +5,10 @@ from pydantic import BaseModel
 
 from sqlmodel import Session, select, func
 from database import get_session
-from models.report import Examination, ExaminationCreate
+from models.report import Examination, ExaminationCreate, MedicalRecordResponse, MedicalRecordListResponse, Prescription, PatientInfo, DoctorInfo
 from models.queue import QueueEntry
 from models.patient import Patient
+from models.employee import Employee
 
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
@@ -143,5 +144,129 @@ def get_doctor_performance(session: Session = Depends(get_session)):
             total_patients=total_patients,
             daily_patients=daily_patients
         ))
-        
+
     return performance_list
+
+
+@router.get("/medical-records/my-patients", response_model=MedicalRecordListResponse)
+def get_medical_records_for_my_patients(
+    doctor_id: int = Query(...),
+    session: Session = Depends(get_session)
+):
+    """
+    Get medical records for patients examined by the specified doctor
+    """
+    # Get examinations by this doctor with patient and doctor details
+    examinations = session.exec(
+        select(Examination)
+        .where(Examination.doctor_id == doctor_id)
+        .order_by(Examination.date.desc())
+    ).all()
+
+    records = []
+    for exam in examinations:
+        # Get patient info
+        patient = session.exec(
+            select(Patient).where(Patient.id == exam.patient_id)
+        ).first()
+
+        # Get doctor info
+        doctor = session.exec(
+            select(Employee).where(Employee.id == exam.doctor_id)
+        ).first()
+
+        # Get prescriptions for this examination
+        prescriptions = session.exec(
+            select(Prescription).where(Prescription.examination_id == exam.id)
+        ).all()
+
+        record = MedicalRecordResponse(
+            id=exam.id,
+            patient_id=exam.patient_id,
+            complaint=exam.complaint,
+            diagnosis=exam.diagnosis,
+            notes=exam.notes,
+            date=exam.date,
+            patient=PatientInfo(
+                id=patient.id,
+                medicalRecordNo=patient.medicalRecordNo,
+                name=patient.name,
+                dob=patient.dob,
+                gender=patient.gender,
+                phone=patient.phone,
+                address=patient.address
+            ) if patient else None,
+            doctor=DoctorInfo(
+                id=doctor.id,
+                name=doctor.name
+            ) if doctor else None,
+            prescriptions=prescriptions
+        )
+        records.append(record)
+
+    return MedicalRecordListResponse(
+        records=records,
+        total=len(records)
+    )
+
+
+@router.get("/medical-records/all", response_model=MedicalRecordListResponse)
+def get_all_medical_records(
+    doctor_id: int = Query(...),
+    session: Session = Depends(get_session)
+):
+    """
+    Get all medical records (for authorized doctors)
+    Note: This endpoint should be used with proper authorization in production
+    """
+    # Get all examinations ordered by date (newest first)
+    examinations = session.exec(
+        select(Examination)
+        .order_by(Examination.date.desc())
+    ).all()
+
+    records = []
+    for exam in examinations:
+        # Get patient info
+        patient = session.exec(
+            select(Patient).where(Patient.id == exam.patient_id)
+        ).first()
+
+        # Get doctor info
+        doctor = session.exec(
+            select(Employee).where(Employee.id == exam.doctor_id)
+        ).first()
+
+        # Get prescriptions for this examination
+        prescriptions = session.exec(
+            select(Prescription).where(Prescription.examination_id == exam.id)
+        ).all()
+
+        record = MedicalRecordResponse(
+            id=exam.id,
+            patient_id=exam.patient_id,
+            complaint=exam.complaint,
+            diagnosis=exam.diagnosis,
+            notes=exam.notes,
+            date=exam.date,
+            patient=PatientInfo(
+                id=patient.id,
+                medicalRecordNo=patient.medicalRecordNo,
+                name=patient.name,
+                dob=patient.dob,
+                gender=patient.gender,
+                phone=patient.phone,
+                address=patient.address
+            ) if patient else None,
+            doctor=DoctorInfo(
+                id=doctor.id,
+                name=doctor.name
+            ) if doctor else None,
+            prescriptions=prescriptions
+        )
+        records.append(record)
+
+    return MedicalRecordListResponse(
+        records=records,
+        total=len(records)
+    )

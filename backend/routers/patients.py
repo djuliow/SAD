@@ -5,11 +5,12 @@ from datetime import datetime
 
 from sqlmodel import Session, select, func
 from database import get_session
-from models.patient import Patient, PatientCreate
+from models.patient import Patient, PatientCreate, PatientUpdate
 from models.queue import QueueEntry
 from models.report import Examination, Prescription # Examination and Prescription are in report.py
 from models.drug import Drug
 from models.payment import Payment
+from models.employee import Employee
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
@@ -19,9 +20,14 @@ class PrescriptionDetail(BaseModel):
     quantity: int
     notes: str
 
+class DoctorInfo(BaseModel):
+    id: int
+    name: str
+
 class ExaminationWithDetails(BaseModel):
     id: int
     doctor_id: int
+    doctor: DoctorInfo
     complaint: str
     diagnosis: str
     notes: str
@@ -102,10 +108,18 @@ def get_patient_history(patient_id: int, session: Session = Depends(get_session)
                 quantity=pres.quantity,
                 notes=pres.notes,
             ))
-        
+
+        # Get doctor info
+        doctor_info = session.exec(select(Employee).where(Employee.id == exam.doctor_id)).first()
+        doctor_data = DoctorInfo(
+            id=doctor_info.id if doctor_info else exam.doctor_id,
+            name=doctor_info.name if doctor_info else "Dokter Tidak Diketahui"
+        )
+
         examinations_with_details.append(ExaminationWithDetails(
             id=exam.id,
             doctor_id=exam.doctor_id,
+            doctor=doctor_data,
             complaint=exam.complaint,
             diagnosis=exam.diagnosis,
             notes=exam.notes,
@@ -174,3 +188,18 @@ def register_patient(patient_create: PatientCreate, session: Session = Depends(g
     session.refresh(new_queue_entry) # To get the auto-generated ID
     
     return new_patient
+
+@router.put("/{patient_id}", response_model=Patient)
+def update_patient(patient_id: int, patient_update: PatientUpdate, session: Session = Depends(get_session)):
+    patient = session.get(Patient, patient_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    patient_data = patient_update.dict(exclude_unset=True)
+    for key, value in patient_data.items():
+        setattr(patient, key, value)
+        
+    session.add(patient)
+    session.commit()
+    session.refresh(patient)
+    return patient

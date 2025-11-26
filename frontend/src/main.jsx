@@ -45,6 +45,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="dokter/dashboard" element={<DokterDashboardPage />} />
           <Route path="dokter/antrian" element={<DokterQueuePage />} />
           <Route path="dokter/riwayat" element={<DokterHistoryPage />} />
+          <Route path="dokter/riwayat/my-patients" element={<DokterHistoryPage />} />
+          <Route path="dokter/riwayat/all" element={<DokterHistoryPage />} />
           <Route path="dokter/pemeriksaan/:id" element={<PemeriksaanDetailPage />} />
           <Route path="kepala/laporan" element={<KepalaReportPage />} />
           <Route path="kepala/jadwal" element={<KepalaSchedulePage />} />

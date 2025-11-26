@@ -20,3 +20,10 @@ class PatientCreate(BaseModel):
     phone: str
     address: str
     doctor_id: Optional[int] = None
+
+class PatientUpdate(BaseModel):
+    name: Optional[str] = None
+    dob: Optional[str] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None

@@ -297,3 +297,13 @@ export async function getDoctorPerformance() {
   const response = await apiRequest('/doctors/performance');
   return response;
 }
+
+export async function getMyPatientsMedicalRecords(doctorId) {
+  const response = await apiRequest(`/doctors/medical-records/my-patients?doctor_id=${doctorId}`);
+  return response;
+}
+
+export async function getAllMedicalRecords(doctorId) {
+  const response = await apiRequest(`/doctors/medical-records/all?doctor_id=${doctorId}`);
+  return response;
+}

@@ -54,13 +54,19 @@ function ExaminationCard({ exam }) {
       <div className="flex justify-between items-start">
         <div>
           <p className="font-bold text-navy">{exam.diagnosis}</p>
-          <p className="text-sm text-navy/80">{exam.complaint}</p>
+          <p className="text-sm text-navy"><span className="font-semibold">Keluhan:</span> {exam.complaint}</p>
         </div>
-        <p className="text-xs text-navy/60 font-medium whitespace-nowrap">
-          {format(new Date(exam.date), "dd MMM yyyy", { locale: id })}
-        </p>
+        <div className="text-right">
+          <p className="text-xs text-navy/60 font-medium whitespace-nowrap">
+            {format(new Date(exam.date), "dd MMM yyyy", { locale: id })}
+          </p>
+          <div className="flex items-center justify-end gap-1 mt-1">
+            <span className="text-xs text-navy/60">Oleh:</span>
+            <span className="text-xs font-semibold text-navy">{exam?.doctor?.name || "Tidak diketahui"}</span>
+          </div>
+        </div>
       </div>
-      <p className="text-sm text-navy/60 mt-2">
+      <p className="text-sm text-navy mt-2">
         <span className="font-semibold">Catatan:</span> {exam.notes || "-"}
       </p>
       {exam.prescriptions.length > 0 && (

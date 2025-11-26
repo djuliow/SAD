@@ -55,3 +55,35 @@ class PrescriptionCreate(BaseModel):
     quantity: int
     notes: str
     status: str = "menunggu"
+
+
+class MedicalRecordBase(BaseModel):
+    id: int
+    patient_id: int
+    complaint: str
+    diagnosis: str
+    notes: str
+    date: datetime
+
+class PatientInfo(BaseModel):
+    id: int
+    medicalRecordNo: str
+    name: str
+    dob: str
+    gender: str
+    phone: str
+    address: str
+
+class DoctorInfo(BaseModel):
+    id: int
+    name: str
+
+class MedicalRecordResponse(MedicalRecordBase):
+    patient: PatientInfo
+    doctor: DoctorInfo
+    prescriptions: List[Prescription] = []
+
+
+class MedicalRecordListResponse(BaseModel):
+    records: List[MedicalRecordResponse]
+    total: int
