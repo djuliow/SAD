@@ -41,9 +41,12 @@ export function PendingBillCard({ bill, onPaymentSuccess }) {
             size="sm"
             variant="outline"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-navy hover:bg-navy/5"
+            className="text-navy hover:bg-navy/5 flex items-center gap-1"
           >
             {isExpanded ? "Tutup" : "Rincian"}
+            <span className={`transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
           </Button>
           <Button
             size="sm"

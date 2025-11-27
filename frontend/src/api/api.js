@@ -31,6 +31,14 @@ export async function registerPatient(payload) {
   return response;
 }
 
+export async function updatePatient(id, payload) {
+  const response = await apiRequest(`/patients/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return response;
+}
+
 export async function listQueues(status, doctorId) {
   let endpoint = '/queue/';
   const params = new URLSearchParams();

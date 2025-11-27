@@ -276,13 +276,21 @@ export default function AdminFinancialReportPage() {
                             <button
                               onClick={() => {
                                 const detail = document.getElementById(`payment-detail-${payment.id}`);
+                                const arrow = document.getElementById(`arrow-${payment.id}`);
                                 if (detail) {
                                   detail.classList.toggle('hidden');
+                                  if (arrow) {
+                                    if (detail.classList.contains('hidden')) {
+                                      arrow.textContent = '▼'; // Down arrow when collapsed
+                                    } else {
+                                      arrow.textContent = '▲'; // Up arrow when expanded
+                                    }
+                                  }
                                 }
                               }}
-                              className="text-xs text-teal hover:text-teal/80"
+                              className="text-xs text-teal hover:text-teal/80 transition-transform duration-300 ease-in-out"
                             >
-                              ▼
+                              <span id={`arrow-${payment.id}`} className="arrow-toggle">▼</span>
                             </button>
                           ) : (
                             <span className="text-xs text-slate-400">-</span>
@@ -290,7 +298,7 @@ export default function AdminFinancialReportPage() {
                         </TableCell>
                       </TableRow>
                       {payment.details && payment.details.length > 0 && (
-                        <TableRow id={`payment-detail-${payment.id}`} className="hidden bg-sky-blue/10 border-navy/10">
+                        <TableRow key={`payment-detail-${payment.id}`} id={`payment-detail-${payment.id}`} className="hidden bg-sky-blue/10 border-navy/10">
                           <TableCell colSpan="7" className="p-4 text-sm">
                             <div className="space-y-2">
                               <h4 className="font-semibold text-navy">Rincian Pembayaran</h4>

@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { formatCurrency } from "/src/lib/utils";
 import { Badge } from "/src/components/ui/badge";
+import { Button } from "/src/components/ui/button";
 
 export function PaymentCard({ payment }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className="rounded-xl border border-navy/10 bg-sky-blue/50 p-4 shadow-sm hover:bg-sky-blue/30 transition-all">
       <div className="flex items-center justify-between">
@@ -12,11 +16,26 @@ export function PaymentCard({ payment }) {
           <p className="text-sm text-slate-500">{format(new Date(payment.payment_date), "dd MMM yyyy HH:mm", { locale: id })}</p>
           <p className="text-lg font-semibold text-slate-900">{formatCurrency(payment.total_amount)}</p>
         </div>
-        <Badge variant="success" className="capitalize">{payment.status}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="success" className="capitalize">{payment.status}</Badge>
+          {payment.details && payment.details.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-navy hover:bg-navy/5 flex items-center gap-1"
+            >
+              {isExpanded ? "Tutup" : "Rincian"}
+              <span className={`transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-180' : ''}`}>
+                ▼
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
       <p className="mt-2 text-sm text-slate-500">Metode: {payment.method}</p>
 
-      {payment.details && payment.details.length > 0 && (
+      {payment.details && payment.details.length > 0 && isExpanded && (
         <div className="mt-4 pt-4 border-t border-navy/10">
           <div className="space-y-2">
             <h4 className="font-semibold text-navy text-sm">Rincian Pembayaran</h4>
